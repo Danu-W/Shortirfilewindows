@@ -30,6 +30,10 @@ Dependencies are resolved in the local cache. This environment cannot resolve ex
 
 The workflow runs `flutter analyze`, then `flutter build windows --release`, and uploads `shortir-file-windows-x64.zip` plus its SHA-256 file. Trigger it by pushing to `main`/`master` (changes under `lib/`, `windows/`, `assets/`, `pubspec.*`, or the workflow itself), opening a pull request, or running **Windows build** manually from the Actions tab. The publishable key is a public client value; never add a service-role or Xendit secret to the app.
 
+## Windows deep links
+
+The Windows runner registers `shortirfile://` under `HKCU\Software\Classes\shortirfile` on launch, then forwards incoming links to the running instance. Supabase email confirmation and password-recovery redirects therefore open the app on Windows, the same way they do on macOS. The scheme is registered on first launch, so launch the portable app once before testing an email link; if the app folder is moved, launch it once from the new path to update the registry entry. The portable build does not clean up the registry key on removal; delete `HKCU\Software\Classes\shortirfile` manually if desired.
+
 ## Supabase setup
 
 1. Create a Supabase project and apply `supabase/migrations/202610270001_initial_account_entitlements.sql`.
