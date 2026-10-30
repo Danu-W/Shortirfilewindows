@@ -1,0 +1,2 @@
+[functions.xendit-webhook]
+verify_jwt = false

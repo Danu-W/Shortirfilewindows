@@ -1,0 +1,47 @@
+<svg width="1600" height="1080" viewBox="0 0 1600 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1080" rx="28" fill="#F4F6F3"/>
+  <path d="M0 28C0 12.536 12.536 0 28 0H1572C1587.46 0 1600 12.536 1600 28V60H0V28Z" fill="#222A2A"/>
+  <circle cx="30" cy="30" r="14" fill="#FF5F57"/>
+  <circle cx="76" cy="30" r="14" fill="#FEBC2E"/>
+  <circle cx="122" cy="30" r="14" fill="#28C840"/>
+  <text x="167" y="39" fill="#AEB5B5" font-family="Arial, sans-serif" font-size="26" font-weight="700">Shortir File</text>
+
+  <rect y="60" width="1600" height="136" fill="#F8FBF8"/>
+  <rect x="30" y="90" width="76" height="76" rx="25" fill="url(#iconGradient)"/>
+  <rect x="48" y="103" width="38" height="48" rx="4" fill="white"/>
+  <rect x="55" y="111" width="24" height="4" rx="2" fill="#BCD9CA"/>
+  <rect x="55" y="119" width="18" height="4" rx="2" fill="#BCD9CA"/>
+  <rect x="42" y="127" width="30" height="25" rx="4" fill="#217A59"/>
+  <path d="M46 146L54 137L60 142L65 136L72 146H46Z" fill="#8ED3A9"/>
+  <circle cx="63" cy="133" r="3" fill="#B8E6C9"/>
+  <text x="129" y="125" fill="#18231E" font-family="Arial, sans-serif" font-size="34" font-weight="700">Shortir File</text>
+  <text x="129" y="159" fill="#4D5B54" font-family="Arial, sans-serif" font-size="24" font-weight="600">Atur file dengan mudah</text>
+  <circle cx="1350" cy="128" r="21" stroke="#46524D" stroke-width="6"/>
+  <circle cx="1350" cy="121" r="6" stroke="#46524D" stroke-width="5"/>
+  <path d="M1337 145C1341 136 1359 136 1363 145" stroke="#46524D" stroke-width="5" stroke-linecap="round"/>
+  <text x="1432" y="140" fill="#286448" font-family="Arial, sans-serif" font-size="25" font-weight="500">ID</text>
+  <path d="M1535 106C1524 109 1517 119 1517 130C1517 145 1529 157 1544 157C1551 157 1558 154 1563 149C1560 150 1557 151 1553 151C1538 151 1526 139 1526 124C1526 117 1529 110 1535 106Z" fill="#46524D"/>
+
+  <rect x="0" y="196" width="1600" height="884" fill="#F4F6F3"/>
+  <rect x="370" y="462" width="860" height="536" rx="40" fill="white"/>
+  <rect x="726" y="524" width="148" height="148" rx="42" fill="url(#iconGradient)"/>
+  <rect x="761" y="550" width="78" height="99" rx="8" fill="white"/>
+  <rect x="775" y="566" width="50" height="7" rx="3.5" fill="#BCD9CA"/>
+  <rect x="775" y="578" width="35" height="7" rx="3.5" fill="#BCD9CA"/>
+  <rect x="747" y="596" width="60" height="46" rx="8" fill="#217A59"/>
+  <path d="M755 632L770 615L782 625L792 613L806 632H755Z" fill="#8ED3A9"/>
+  <circle cx="787" cy="606" r="6" fill="#B8E6C9"/>
+  <text x="800" y="755" text-anchor="middle" fill="#18231E" font-family="Arial, sans-serif" font-size="48" font-weight="700">Semua berkas, lebih tertata.</text>
+  <text x="800" y="812" text-anchor="middle" fill="#18231E" font-family="Arial, sans-serif" font-size="30" font-weight="400">Pilih folder untuk mulai merapikan foto dan dokumen.</text>
+  <rect x="656" y="865" width="288" height="60" rx="30" fill="#286448"/>
+  <path d="M689 883H710V907H689V883Z" stroke="white" stroke-width="4"/>
+  <path d="M694 879H705L709 883H694V879Z" stroke="white" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M699.5 889V901M693.5 895H705.5" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <text x="817" y="902" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="26" font-weight="700">Pilih Folder</text>
+  <defs>
+    <linearGradient id="iconGradient" x1="30" y1="90" x2="104" y2="166" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5AA77E"/>
+      <stop offset="1" stop-color="#155D46"/>
+    </linearGradient>
+  </defs>
+</svg>

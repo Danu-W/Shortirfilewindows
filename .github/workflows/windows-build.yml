@@ -1,0 +1,79 @@
+name: Windows build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - 'lib/**'
+      - 'windows/**'
+      - 'assets/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+      - '.github/workflows/windows-build.yml'
+  pull_request:
+    paths:
+      - 'lib/**'
+      - 'windows/**'
+      - 'assets/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+      - '.github/workflows/windows-build.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.8'
+          channel: stable
+          cache: true
+
+      - name: Show Flutter version
+        run: flutter --version
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Build Windows release
+        run: >
+          flutter build windows --release
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          --dart-define=SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          --dart-define=SUPABASE_AUTH_REDIRECT_URL=shortirfile://login-callback/
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $release = "build\windows\x64\runner\Release"
+          if (-not (Test-Path $release)) {
+            throw "Release output not found: $release"
+          }
+          $zip = "shortir-file-windows-x64.zip"
+          Compress-Archive -Path "$release\*" -DestinationPath $zip -Force
+          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash
+          "$hash  $zip" | Set-Content "$zip.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shortir-file-windows-x64
+          path: |
+            shortir-file-windows-x64.zip
+            shortir-file-windows-x64.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
