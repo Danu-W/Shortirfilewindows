@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -57,6 +59,9 @@ const _documents = <String>{
   'xls',
   'xlsx',
 };
+
+const _freeFileLimitPerSort = 100;
+const _freeSortsPerMonth = 3;
 
 bool get _hasSupabaseConfig =>
     _supabaseUrl.isNotEmpty && _supabaseKey.isNotEmpty;
@@ -376,7 +381,8 @@ class _ShortirAuthGateState extends State<ShortirAuthGate> {
   }
 }
 
-class _ShortirHomeState extends State<ShortirHome> {
+class _ShortirHomeState extends State<ShortirHome>
+    with WidgetsBindingObserver {
   final _search = TextEditingController();
   final _destination = TextEditingController();
   Directory? _folder;
@@ -384,14 +390,101 @@ class _ShortirHomeState extends State<ShortirHome> {
   final Set<String> _selected = {};
   String _kind = 'photos';
   bool _busy = false;
+  bool _isPro = false;
+  bool _planLoaded = false;
+  int _sortsUsed = 0;
   String? _message;
 
   String t(String id, String en) => widget.english ? en : id;
 
+  String get _quotaOwner =>
+      (_hasSupabaseConfig
+          ? Supabase.instance.client.auth.currentUser?.id
+          : null) ??
+      'local';
+
+  String get _currentMonth {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}';
+  }
+
+  int get _sortsLeft =>
+      (_sortsUsed >= _freeSortsPerMonth ? 0 : _freeSortsPerMonth - _sortsUsed);
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _restoreAccountPreferences();
+    _loadPlan();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadPlan();
+    }
+  }
+
+  Future<void> _loadPlan() async {
+    var isPro = false;
+    if (_hasSupabaseConfig) {
+      try {
+        final user = Supabase.instance.client.auth.currentUser;
+        if (user != null) {
+          final entitlement = await Supabase.instance.client
+              .from('billing_entitlements')
+              .select('status, expires_at')
+              .eq('user_id', user.id)
+              .maybeSingle();
+          final status = entitlement?['status'];
+          isPro = status == 'active' || status == 'grace_period';
+          final expiresAt = entitlement?['expires_at'];
+          if (isPro && expiresAt != null) {
+            final expiry = DateTime.tryParse(expiresAt.toString());
+            if (expiry != null && expiry.isBefore(DateTime.now())) {
+              isPro = false;
+            }
+          }
+        }
+      } catch (_) {}
+    }
+    final sortsUsed = await _readUsage();
+    if (!mounted) return;
+    setState(() {
+      _isPro = isPro;
+      _planLoaded = true;
+      _sortsUsed = sortsUsed;
+    });
+  }
+
+  Future<int> _readUsage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('sort_usage_$_quotaOwner');
+    if (raw != null) {
+      try {
+        final data = jsonDecode(raw) as Map<String, dynamic>;
+        final month = data['month'] as String? ?? '';
+        final count = (data['count'] as num?)?.toInt() ?? 0;
+        if (month == _currentMonth) {
+          return count;
+        }
+      } catch (_) {}
+    }
+    return 0;
+  }
+
+  Future<void> _recordSort() async {
+    final prefs = await SharedPreferences.getInstance();
+    final next = await _readUsage() + 1;
+    await prefs.setString(
+      'sort_usage_$_quotaOwner',
+      jsonEncode({'month': _currentMonth, 'count': next}),
+    );
+    if (!mounted) return;
+    setState(() {
+      _sortsUsed = next;
+    });
   }
 
   Future<void> _restoreAccountPreferences() async {
@@ -430,6 +523,7 @@ class _ShortirHomeState extends State<ShortirHome> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _search.dispose();
     _destination.dispose();
     super.dispose();
@@ -534,6 +628,33 @@ class _ShortirHomeState extends State<ShortirHome> {
       );
       return;
     }
+    final selectedFiles =
+        _files.where((file) => _selected.contains(file.path)).toList();
+    if (!_isPro) {
+      if (selectedFiles.length > _freeFileLimitPerSort) {
+        _showMessage(
+          t(
+            'Paket Gratis maksimal $_freeFileLimitPerSort berkas per sortir. Upgrade ke Pro untuk tanpa batas.',
+            'Free plan allows up to $_freeFileLimitPerSort files per sort. Upgrade to Pro for unlimited sorting.',
+          ),
+        );
+        return;
+      }
+      final sortsUsed = await _readUsage();
+      if (!mounted) return;
+      setState(() {
+        _sortsUsed = sortsUsed;
+      });
+      if (sortsUsed >= _freeSortsPerMonth) {
+        _showMessage(
+          t(
+            'Kuota Gratis $_freeSortsPerMonth sortir bulan ini sudah habis. Upgrade ke Pro untuk melanjutkan.',
+            'Free quota of $_freeSortsPerMonth sorts this month is used up. Upgrade to Pro to continue.',
+          ),
+        );
+        return;
+      }
+    }
     final targetDir = '${folder.path}${Platform.pathSeparator}$name';
     final targetDirObj = Directory(targetDir);
     if (await targetDirObj.exists()) {
@@ -570,9 +691,7 @@ class _ShortirHomeState extends State<ShortirHome> {
     try {
       await targetDirObj.create(recursive: false);
       final moved = <String>{};
-      for (final file in _files.where(
-        (item) => _selected.contains(item.path),
-      )) {
+      for (final file in selectedFiles) {
         try {
           final filename = file.uri.pathSegments.last;
           final destPath = await _getUniqueDestinationPath(targetDir, filename);
@@ -596,6 +715,9 @@ class _ShortirHomeState extends State<ShortirHome> {
       });
       if (moved.isNotEmpty) {
         _destination.clear();
+        if (!_isPro) {
+          await _recordSort();
+        }
       }
     } catch (error) {
       if (!mounted) return;
@@ -817,6 +939,7 @@ class _ShortirHomeState extends State<ShortirHome> {
                 'Signed in. Free plan is active.',
               ),
       );
+      await _loadPlan();
     } catch (error) {
       _showMessage(t('Gagal mengakses akun: $error', 'Account error: $error'));
     }
@@ -1035,6 +1158,44 @@ class _ShortirHomeState extends State<ShortirHome> {
             ],
           ),
         ),
+        if (_planLoaded && !_isPro)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 8, 4),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.workspace_premium_outlined,
+                  size: 16,
+                  color: _sortsLeft > 0
+                      ? Theme.of(context).colorScheme.onSurfaceVariant
+                      : Theme.of(context).colorScheme.error,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    _sortsLeft > 0
+                        ? t(
+                            'Paket Gratis: $_sortsLeft/$_freeSortsPerMonth sortir tersisa bulan ini · maks $_freeFileLimitPerSort berkas per sortir',
+                            'Free plan: $_sortsLeft/$_freeSortsPerMonth sorts left this month · max $_freeFileLimitPerSort files per sort',
+                          )
+                        : t(
+                            'Kuota Gratis bulan ini habis · upgrade untuk lanjut',
+                            'Free quota used up this month · upgrade to continue',
+                          ),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: _sortsLeft > 0
+                              ? Theme.of(context).colorScheme.onSurfaceVariant
+                              : Theme.of(context).colorScheme.error,
+                        ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _upgradeToPro,
+                  child: Text(t('Upgrade', 'Upgrade')),
+                ),
+              ],
+            ),
+          ),
         Expanded(
           child: files.isEmpty
               ? Center(

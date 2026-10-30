@@ -6,8 +6,14 @@ Cross-platform product foundation for macOS, Windows, Android, and iOS. The exis
 
 - Indonesian and English interface, light/dark appearance, local folder selection, photo/document filtering, and moving selected files into a new folder.
 - Optional Supabase email/password account flow. Set the public Supabase URL and publishable key with `--dart-define` when running/building.
-- Supabase migration for per-account language settings and read-only client access to server-managed subscription entitlements. Language is synchronized when signed in; subscription status is checked when the user signs in.
+- Supabase migration for per-account language settings and read-only client access to server-managed subscription entitlements. Language is synchronized when signed in; subscription status is checked at startup, after sign-in, and when the app returns to the foreground.
 - Subscription purchases are not live yet. The database intentionally prevents a client app from granting itself Pro. Xendit credentials and verified server-side payment notifications must be configured before charging customers.
+
+## Free plan limits
+
+Accounts without an active `pro` entitlement (including local use without Supabase configured) are on the Free plan: at most 100 files per sort and 3 completed sorts per calendar month. Pro accounts (`billing_entitlements.status` is `active` or `grace_period` and not expired) skip both limits, and a banner in the workspace shows the remaining Free quota with an Upgrade shortcut.
+
+Usage counters are stored per account/device in `shared_preferences`, so they survive app restarts but reset on reinstall or when local app data is cleared. Move enforcement to a server-side quota before treating Free limits as a billing control.
 
 ## Tooling
 
