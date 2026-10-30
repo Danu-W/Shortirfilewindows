@@ -58,3 +58,6 @@ key.properties
 android/key.properties
 ios/Runner/GoogleService-Info.plist
 macos/Runner/GoogleService-Info.plist
+
+# Supabase CLI local state
+supabase/.temp/
