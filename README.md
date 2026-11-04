@@ -27,6 +27,27 @@ flutter run -d macos
 
 Dependencies are resolved in the local cache. This environment cannot resolve external package hosts, so fresh dependency downloads and Android Gradle downloads require working network access. Android SDK Command-line Tools and licenses are installed. CocoaPods 1.17.0 is installed through Homebrew; the interactive shell loads Homebrew from `/opt/homebrew/bin`. `flutter doctor -v` still reports that Xcode needs its first-run components. Windows desktop builds require a Windows machine with Visual Studio's Desktop development with C++ workload.
 
+## Update in-app (macOS)
+
+Aplikasi macOS mengecek versi terbaru dari GitHub Releases (`Danu-W/Shortirfilewindows`) saat dijalankan, memakai `api.github.com` publik. Jika ada release baru dengan versi lebih tinggi dari `APP_VERSION` aplikasi, muncul dialog "Unduh & Pasang": unduh zip, verifikasi SHA-256 (jika aset `.sha256` tersedia), lalu ganti bundle aplikasi dan jalankan ulang. Supabase tetap dipakai untuk auth/data — tidak ada migrasi yang diperlukan.
+
+Cara publish versi baru:
+
+1. Naikkan versi di `pubspec.yaml` (contoh `1.1.0+4`), lalu beri tahu aplikasi lewat `--dart-define=APP_VERSION=1.1.0` (atau tambahkan `APP_VERSION` di `.supabase.local.json`, yang otomatis terbaca saat build).
+2. Build release macOS:
+   ```sh
+   flutter build macos --release --dart-define-from-file=.supabase.local.json
+   ```
+3. Buat zip dan checksum:
+   ```sh
+   cd build/macos/Build/Products/Release
+   zip -ry shortir-file-macos.zip shortir_file.app
+   shasum -a 256 shortir-file-macos.zip > shortir-file-macos.zip.sha256
+   ```
+4. Buat GitHub release dengan tag `v1.1.0` dan unggah kedua file di atas sebagai aset. Nama aset zip harus berawalan `shortir-file-macos` dan berakhiran `.zip` agar dikenali updater.
+
+Catatan: penggantian bundle butuh izin tulis pada folder tempat aplikasi berada. Jika aplikasi dipasang di `/Applications`, macOS mungkin menolak tanpa hak admin; pengguna bisa memindahkan aplikasi ke `~//` atau folder lain yang bisa ditulis.
+
 ## Windows CI build
 
 `.github/workflows/windows-build.yml` builds the Windows release on `windows-latest` without a local Windows machine. Add these repository secrets under Settings > Secrets and variables > Actions:

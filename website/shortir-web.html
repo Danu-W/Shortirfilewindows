@@ -1,0 +1,1534 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Shortir File versi web — atur foto dan dokumen langsung dari browser dengan File System Access API." />
+    <title>Shortir File — Versi Web</title>
+    <link rel="icon" type="image/png" sizes="256x256" href="assets/shortir_file_icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .app-shell {
+        --bg: #f4f6f3;
+        --card: #ffffff;
+        --ink: #1b2b22;
+        --muted: #5c6f63;
+        --line: rgba(40, 100, 72, 0.2);
+        --accent: #286448;
+        --accent-dark: #1d4a35;
+        --danger: #b3261e;
+        --chip-bg: rgba(40, 100, 72, 0.1);
+        --hover: rgba(40, 100, 72, 0.05);
+        --selected: rgba(40, 100, 72, 0.12);
+        background: var(--bg);
+        color: var(--ink);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        box-shadow: 0 18px 48px rgba(20, 40, 30, 0.12);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: calc(100vh - 150px);
+        max-height: calc(100vh - 150px);
+      }
+      .app-shell.dark {
+        --bg: #101a14;
+        --card: #18251d;
+        --ink: #e8efe9;
+        --muted: #93a89a;
+        --line: rgba(140, 200, 165, 0.18);
+        --accent: #4fae7e;
+        --accent-dark: #79cda0;
+        --danger: #ff8a80;
+        --chip-bg: rgba(79, 174, 126, 0.16);
+        --hover: rgba(79, 174, 126, 0.08);
+        --selected: rgba(79, 174, 126, 0.16);
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
+      }
+      .topbar { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+      .toolbar {
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+        background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px;
+      }
+      .toolbar .spacer { flex: 1; }
+      .searchrow { display: flex; gap: 8px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+      .searchrow input {
+        flex: 1; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px;
+        font: inherit; font-size: 13px; background: var(--bg); color: var(--ink);
+      }
+      .chipbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 2px; min-height: 20px; }
+      .selection-preview { display: flex; gap: 9px; align-items: center; min-height: 72px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); overflow-x: auto; }
+      .selection-preview[hidden] { display: none; }
+      .selection-preview-item { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; min-width: 150px; max-width: 210px; padding: 6px 9px 6px 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+      .selection-preview-thumb { display: grid; place-items: center; width: 46px; height: 46px; flex: 0 0 46px; overflow: hidden; border-radius: 9px; background: var(--chip-bg); color: var(--accent); }
+      .selection-preview-thumb img { width: 100%; height: 100%; object-fit: cover; }
+      .selection-preview-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-size: 11px; font-weight: 600; }
+      .selection-preview-more { color: var(--muted); font-size: 12px; white-space: nowrap; }
+      .items.grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 12px; padding: 14px; }
+      .items.grid .item { min-width: 0; align-items: stretch; padding: 11px; gap: 9px; }
+      .items.grid .item .thumb { width: 100%; height: 112px; border-radius: 12px; }
+      .items.grid .item .meta { width: 100%; min-width: 0; text-align: left; padding: 0 2px; }
+      .items.grid .item .meta .name { display: -webkit-box; min-height: 30px; white-space: normal; overflow: hidden; text-overflow: ellipsis; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.35; word-break: break-word; }
+      .items.grid .item .meta .sub { display: block; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .items.grid .item .check { z-index: 2; top: 9px; right: 9px; width: 24px; height: 24px; border-width: 1.5px; background: var(--card); color: transparent; box-shadow: 0 3px 9px rgba(17, 27, 22, .15); }
+      .items.grid .item.selected .check { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .chip {
+        background: var(--chip-bg); color: var(--accent-dark); border: 1px solid var(--line);
+        border-radius: 999px; padding: 3px 10px; font-size: 12px; display: inline-flex; gap: 6px; align-items: center;
+      }
+      .chip button { border: 0; background: none; cursor: pointer; color: inherit; font-size: 14px; line-height: 1; }
+      .filelist { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; flex: 1; min-height: 200px; }
+      .filelist-head {
+        display: flex; gap: 8px; align-items: center; padding: 8px 12px;
+        border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); flex-wrap: wrap;
+      }
+      .filelist-head .spacer { flex: 1; }
+      .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      .seg button {
+        border: 0; background: var(--card); color: var(--muted); padding: 5px 10px; cursor: pointer;
+        font: inherit; font-size: 11px;
+      }
+      .seg button.on { background: var(--accent); color: #fff; }
+      .items { overflow: auto; flex: 1; }
+      .item {
+        display: flex; align-items: center; gap: 12px; padding: 7px 12px;
+        border-bottom: 1px solid color-mix(in srgb, var(--line) 40%, transparent); cursor: pointer;
+      }
+      .item:hover { background: var(--hover); }
+      .item.selected { background: var(--selected); }
+      .item .thumb {
+        width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: var(--bg);
+        display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; overflow: hidden;
+        color: var(--muted);
+      }
+      .item .thumb svg { width: 62%; height: 62%; }
+      .item .thumb img { width: 100%; height: 100%; object-fit: cover; }
+      .item .meta { flex: 1; min-width: 0; }
+      .item .meta .name { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .item .meta .sub { font-size: 11px; color: var(--muted); }
+      .item .check {
+        width: 20px; height: 20px; border: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+        border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; flex-shrink: 0;
+      }
+      .item.selected .check { background: var(--accent); border-color: var(--accent); }
+      .items.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; padding: 12px; align-content: start; }
+      .items.grid .item { flex-direction: column; text-align: center; border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px; gap: 6px; position: relative; }
+      .items.grid .item .thumb { width: 100%; height: 96px; }
+      .items.grid .item .check { position: absolute; top: 6px; right: 6px; background: var(--card); }
+      .actionbar {
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+        background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px;
+      }
+      .actionbar .spacer { flex: 1; }
+      .status { font-size: 12px; color: var(--muted); max-width: 420px; }
+      .btn { border: 0; border-radius: 10px; padding: 8px 14px; font: inherit; font-weight: 600; font-size: 12px; cursor: pointer; }
+      .btn:disabled { opacity: 0.45; cursor: default; }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-outline { background: var(--card); border: 1px solid var(--line); color: var(--accent-dark); }
+      .btn-small { padding: 5px 10px; font-size: 11px; }
+      .empty { padding: 32px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+      .unsupported { background: color-mix(in srgb, var(--danger) 10%, var(--card)); border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent); color: var(--danger); border-radius: 14px; padding: 14px 16px; font-size: 13px; }
+      .hidden { display: none !important; }
+      .divider { height: 1px; background: var(--line); }
+      .app-shell.locked { pointer-events: none; filter: blur(3px); opacity: 0.7; }
+      .login-overlay {
+        position: fixed; inset: 0; z-index: 50;
+        background: rgba(13, 28, 20, 0.55);
+        backdrop-filter: blur(6px);
+        display: flex; align-items: center; justify-content: center; padding: 20px;
+      }
+      .login-card {
+        background: #ffffff; color: #1b2b22;
+        border: 1px solid rgba(40, 100, 72, 0.2); border-radius: 20px;
+        padding: 28px; width: 100%; max-width: 380px;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
+      }
+      .login-card h2 { margin: 14px 0 4px; font-family: 'Fraunces', serif; font-size: 22px; }
+      .login-card p { margin: 0 0 16px; color: #5c6f63; font-size: 13px; }
+      .login-card .logo { width: 52px; height: 52px; border-radius: 14px; }
+      .login-card input {
+        width: 100%; box-sizing: border-box;
+        border: 1px solid rgba(40, 100, 72, 0.2); border-radius: 12px;
+        padding: 10px 12px; margin-bottom: 10px;
+        font: inherit; font-size: 13px;
+        background: #f4f6f3; color: #1b2b22;
+      }
+      .login-card .login-error { color: #b3261e; font-size: 12px; min-height: 18px; margin-bottom: 6px; }
+      .login-card .login-row { display: flex; gap: 8px; align-items: center; }
+      .login-card .login-row .spacer { flex: 1; }
+      .login-card .switch-link { background: none; border: 0; color: #1d4a35; cursor: pointer; font: inherit; font-size: 12px; text-decoration: underline; }
+      #login-btn { background: #286448; color: #fff; }
+      .account-row { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+      .account-row .spacer { flex: 1; }
+      .account-email {
+        background: #f4f6f3; border: 1px solid rgba(40, 100, 72, 0.2);
+        border-radius: 12px; padding: 10px 12px; margin-bottom: 10px;
+        font-size: 13px; color: #1b2b22; overflow-wrap: anywhere;
+      }
+      .account-identity { display: flex; align-items: center; gap: 8px; margin: 0 0 18px; color: #66736b; font-size: 13px; overflow-wrap: anywhere; }
+      .plan-badge { color: #2e6b4f; font-weight: 700; white-space: nowrap; }
+
+      /* Match the desktop app shell rather than the marketing-site chrome. */
+      html, body { min-height: 100%; }
+      body { background: #f4f6f3; font-family: 'DM Sans', system-ui, sans-serif; }
+      body > .grain, body > .site-header, body > footer { display: none; }
+      body > main { min-height: 100vh; }
+      body > main > .section-shell { width: 100%; max-width: none; padding: 0 !important; }
+      .app-shell {
+        border: 0; border-radius: 0; box-shadow: none; padding: 18px;
+        min-height: 100vh; max-height: none; gap: 12px; box-sizing: border-box;
+      }
+      .app-shell .topbar { justify-content: flex-end; align-items: center; min-height: 50px; }
+      .app-brand { display: flex; align-items: center; gap: 11px; margin-right: auto; }
+      .app-brand img { width: 38px; height: 38px; border-radius: 12px; }
+      .app-brand strong { display: block; font-size: 17px; line-height: 1.15; }
+      .app-brand span { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
+      .app-shell .toolbar, .app-shell .searchrow { border-radius: 20px; padding: 12px 14px; }
+      .app-shell .filelist { border-radius: 20px; }
+      .app-shell .actionbar { border-radius: 20px; }
+      .app-shell .btn { border-radius: 12px; }
+      .app-shell .item { padding: 9px 14px; }
+      .app-shell .item .thumb { width: 44px; height: 44px; border-radius: 10px; }
+      .app-shell.locked { filter: blur(3px); }
+      @media (max-width: 720px) {
+        .app-shell { padding: 12px; }
+        .app-brand { width: 100%; margin-bottom: 4px; }
+        .app-shell .topbar { justify-content: flex-start; flex-wrap: wrap; }
+      }
+
+      /* Final spacing pass for a quieter, more native desktop-app layout. */
+      body { overflow: hidden; }
+      body > main > .section-shell { margin: 0; }
+      .app-shell { width: 100%; height: 100vh; min-height: 100vh; gap: 14px; padding: 20px 24px; }
+      .app-shell .topbar { gap: 8px; flex-wrap: nowrap; }
+      .app-shell .toolbar { gap: 10px; min-height: 48px; }
+      .app-shell .searchrow { min-height: 44px; }
+      .app-shell .searchrow input { border: 0; background: transparent; outline: 0; min-width: 0; }
+      .app-shell .filelist { min-height: 0; }
+      .app-shell .filelist-head { min-height: 44px; padding: 8px 14px; }
+      .app-shell .filelist-head select.btn {
+        flex: 0 0 auto; min-width: 0; appearance: none; -webkit-appearance: none;
+        padding: 7px 27px 7px 11px; background-repeat: no-repeat;
+        background-position: right 9px center; background-size: 13px 13px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2366736b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      }
+      .app-shell .filelist-head #ext { width: 132px; }
+      .app-shell .filelist-head #sort { width: 92px; }
+      .app-shell.dark .filelist-head select.btn { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a8b8ad' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
+      .app-shell .actionbar { min-height: 48px; padding: 8px 12px; }
+      .app-shell .status { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .app-shell .btn { transition: background .16s ease, border-color .16s ease, transform .16s ease; }
+      .app-shell .btn:not(:disabled):hover { transform: translateY(-1px); }
+      .app-shell .btn-outline:hover { background: var(--hover); border-color: var(--accent); }
+      .app-shell .btn:focus-visible, .app-shell select:focus-visible, .app-shell input:focus-visible {
+        outline: 3px solid color-mix(in srgb, var(--accent) 28%, transparent); outline-offset: 2px;
+      }
+      .login-card { padding: 26px; }
+      .login-card .login-row, .login-card .account-row { flex-wrap: wrap; }
+      .login-card .login-row > .btn, .login-card .account-row > .btn { flex: 1; min-width: 110px; }
+      @media (max-width: 900px) {
+        body { overflow: auto; }
+        .app-shell { height: auto; min-height: 100vh; padding: 14px; }
+        .app-shell .topbar { flex-wrap: wrap; }
+        .app-brand { flex: 1 0 100%; }
+        .app-shell .toolbar > .spacer { display: none; }
+        .app-shell .toolbar > .status { flex: 1 0 100%; order: 4; }
+        .app-shell .filelist { min-height: 52vh; }
+        .app-shell .actionbar .status { flex: 1 0 100%; order: 4; }
+      }
+
+      /* Keep the tool page in the same visual system as index.html. */
+      body { overflow-x: hidden; overflow-y: auto; background: var(--bg); }
+      body > .grain, body > .site-header, body > footer { display: initial; }
+      body > .site-header { display: flex; }
+      body > footer.site-footer { display: grid; }
+      body > main { min-height: 0; }
+      body > main > .section-shell {
+        width: min(1180px, calc(100% - 72px));
+        margin: 0 auto;
+        padding: 62px 0 112px !important;
+      }
+      .app-shell {
+        --bg: #f1f3ef;
+        --card: #ffffff;
+        --ink: #111b16;
+        --muted: #66736b;
+        --line: rgba(17, 27, 22, .12);
+        --accent: #2e6b4f;
+        --accent-dark: #111b16;
+        --chip-bg: #dce9df;
+        --hover: #edf2ed;
+        --selected: #e3eee5;
+        min-height: 620px;
+        height: auto;
+        max-height: calc(100vh - 170px);
+        overflow: hidden;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--bg);
+        box-shadow: var(--shadow);
+      }
+      .app-shell.dark {
+        --bg: #152019;
+        --card: #1d2b22;
+        --ink: #eef5ef;
+        --muted: #a8b8ad;
+        --line: rgba(220, 233, 223, .2);
+        --accent: #77b88f;
+        --accent-dark: #dce9df;
+        --chip-bg: rgba(119, 184, 143, .18);
+        --hover: rgba(220, 233, 223, .08);
+        --selected: rgba(119, 184, 143, .18);
+      }
+      .app-shell .topbar { min-height: 54px; }
+      .app-brand strong { font: 600 19px/1 var(--serif); letter-spacing: -.04em; }
+      .app-brand span { font-size: 11px; color: var(--muted); }
+      .app-shell .toolbar, .app-shell .searchrow, .app-shell .filelist, .app-shell .actionbar {
+        border-color: var(--line); box-shadow: 0 8px 24px rgba(17, 27, 22, .035);
+      }
+      .app-shell .toolbar, .app-shell .searchrow, .app-shell .actionbar { background: var(--card); }
+      .app-shell .toolbar { border-radius: 16px; }
+      .app-shell .searchrow { border-radius: 16px; background: var(--card); }
+      .app-shell .filelist { border-radius: 18px; background: var(--card); }
+      .app-shell .actionbar { border-radius: 16px; }
+      .app-shell .btn { border-radius: 99px; }
+      .app-shell .btn-primary { background: var(--accent); }
+      .app-shell .btn-outline { background: var(--card); color: var(--ink); }
+      .app-shell .seg { border-radius: 99px; }
+      .app-shell .seg button { padding: 7px 13px; }
+      .app-shell .seg button.on { background: var(--ink); color: var(--bg); }
+      .app-shell .item { padding: 10px 15px; }
+      .app-shell .item:hover { background: var(--hover); }
+      .app-shell .item.selected { background: var(--selected); }
+      .app-shell .item .thumb { border-radius: 10px; background: var(--bg); }
+      .app-shell .item .thumb img, .app-shell .selection-preview-thumb img { object-fit: cover; }
+      .app-shell .empty { padding: 70px 20px; font-family: var(--serif); font-size: 18px; }
+      .app-shell .empty-state { width: 100%; min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; padding: 38px 20px; text-align: center; }
+      .app-shell .empty-state .empty-icon { display: grid; place-items: center; align-self: center; width: 58px; height: 58px; margin: 0 auto 5px; border-radius: 18px; background: var(--accent-soft); color: var(--accent); }
+      .app-shell .empty-state .empty-icon svg { width: 30px; height: 30px; stroke: currentColor; }
+      .app-shell .empty-state .empty-note { max-width: 330px; margin: 0; color: var(--muted); font: 13px/1.55 var(--sans); }
+      .app-shell .empty-state .btn.btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0; }
+      .app-shell .empty-state .button-icon { display: inline-flex; align-items: center; justify-content: center; height: 1em; margin-right: 7px; line-height: 0; }
+      .app-shell .empty-state .button-icon svg { display: block; width: 16px; height: 16px; stroke: #fff; color: #fff; opacity: 1; }
+      .app-shell .empty-state strong { font: 600 20px/1.15 var(--serif); letter-spacing: -.03em; }
+      .app-shell .empty-state span { max-width: 310px; color: var(--muted); font: 13px/1.55 var(--sans); }
+      .app-shell .empty-state .btn { align-self: center; margin: 9px auto 0; padding: 12px 18px; }
+      .app-shell .empty-state .btn.btn-primary { background: #2e6b4f; color: #fff; box-shadow: 0 8px 18px rgba(46, 107, 79, .2); }
+      .app-shell.dark .empty-state .btn.btn-primary { background: #77b88f; color: #102018; }
+      .app-shell.dark .empty-state .btn.btn-primary .button-icon svg { stroke: #102018; color: #102018; }
+      .login-card { background: var(--bg); border-color: var(--line); box-shadow: var(--shadow); }
+      .login-card h2 { font-family: var(--serif); }
+      .login-card input, .account-email { background: var(--bg-soft); border-color: var(--line); color: var(--ink); }
+      .account-identity { color: var(--muted); }
+      .plan-badge { color: var(--accent); }
+      body.night-mode {
+        --bg: #101a14;
+        --bg-soft: #18251d;
+        --ink: #e8efe9;
+        --muted: #a8b8ad;
+        --accent: #77b88f;
+        --accent-soft: #244332;
+        --line: rgba(220, 233, 223, .2);
+        background: var(--bg);
+      }
+      body.night-mode .site-header { background: rgba(16, 26, 20, .86); }
+      body.night-mode .site-header, body.night-mode .site-footer,
+      body.night-mode .desktop-nav, body.night-mode .footer-links,
+      body.night-mode .footer-brand p { color: var(--muted); }
+      body.night-mode .login-card { background: #18251d; color: #e8efe9; border-color: var(--line); }
+      body.night-mode .login-card p { color: var(--muted); }
+      body.night-mode .login-card input, body.night-mode .account-email { background: #101a14; color: #e8efe9; border-color: var(--line); }
+      body.night-mode .account-identity { color: var(--muted); }
+      body.night-mode .plan-badge { color: var(--accent); }
+      .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 18px 0 8px; }
+      .tool-item { display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 10px 12px; text-align: left; }
+      .tool-item .tool-icon { display: grid; place-items: center; flex: 0 0 30px; width: 30px; height: 30px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font-size: 16px; }
+      .tool-item .tool-copy { display: grid; gap: 2px; min-width: 0; }
+      .tool-item strong { font-size: 12px; line-height: 1.2; }
+      .tool-item small { color: var(--muted); font-size: 10px; line-height: 1.25; }
+      @media (max-width: 460px) { .tools-grid { grid-template-columns: 1fr; } }
+      @media (max-width: 720px) {
+        body > main > .section-shell { width: min(100% - 28px, 680px); padding: 32px 0 70px !important; }
+        .app-shell { min-height: 700px; max-height: none; overflow: visible; padding: 14px; border-radius: 20px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Shortir File home">
+        <img src="assets/shortir_file_icon.png" alt="" />
+        <span>shortir<span class="brand-mark">.</span></span>
+      </a>
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a href="index.html#cara-kerja">Cara kerja</a>
+        <a href="index.html#fitur">Fitur</a>
+        <a href="galeri.html">Galeri</a>
+        <a href="index.html#privasi">Privasi</a>
+      </nav>
+      <div class="header-downloads">
+        <a class="button button-small button-dark" href="https://github.com/Danu-W/Shortirfilewindows/releases/latest/download/shortir-file-macos.zip" target="_blank" rel="noopener">Download Mac <span>↗</span></a>
+        <a class="button button-small button-accent" href="https://github.com/Danu-W/Shortirfilewindows/releases/latest/download/shortir-file-android.apk" target="_blank" rel="noopener">Download Android <span>↗</span></a>
+      </div>
+      <button class="menu-toggle" type="button" aria-label="Buka menu" aria-expanded="false">Menu</button>
+    </header>
+
+    <main>
+      <section class="section-shell" style="padding-top:14px;">
+        <div class="unsupported hidden" id="unsupported">
+          <span id="unsupported-text">Browser ini belum mendukung File System Access API. Gunakan <b>Chrome</b> atau <b>Edge</b> versi desktop.</span>
+        </div>
+
+        <div class="login-overlay hidden" id="login-overlay">
+          <div class="login-card">
+            <img class="logo" src="assets/shortir_file_icon.png" alt="Shortir File" />
+            <h2 id="login-title">Masuk ke Shortir File</h2>
+            <p id="login-sub">Masuk untuk membuka aplikasi web.</p>
+            <input id="login-email" type="email" placeholder="Email" autocomplete="email" />
+            <input id="login-pass" type="password" placeholder="Kata sandi" autocomplete="current-password" />
+            <div class="login-error" id="login-error"></div>
+            <div class="login-row">
+              <button class="switch-link" id="login-switch" type="button">Buat akun baru</button>
+              <span class="spacer"></span>
+              <button class="btn btn-primary" id="login-btn">Masuk</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="login-overlay hidden" id="account-overlay">
+          <div class="login-card">
+            <img class="logo" src="assets/shortir_file_icon.png" alt="Shortir File" />
+            <h2 id="account-title">Pengelola Akun</h2>
+            <p>Kelola akun Shortir File Anda.</p>
+            <div class="account-identity">
+              <span id="account-email"></span>
+              <span id="account-plan" class="plan-badge"></span>
+            </div>
+            <div class="login-error" id="account-error"></div>
+            <div class="account-row">
+              <button class="btn btn-outline" id="account-reset" type="button">Reset Password</button>
+              <button class="btn btn-outline" id="account-upgrade" type="button">Upgrade Pro</button>
+            </div>
+            <div class="account-row">
+              <button class="btn btn-outline" id="account-logout">Keluar</button>
+              <span class="spacer"></span>
+              <button class="btn btn-outline" id="account-cancel">Tutup</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="login-overlay hidden" id="tools-overlay">
+          <div class="login-card">
+            <img class="logo" src="assets/shortir_file_icon.png" alt="Shortir File" />
+            <h2>Tools Pro</h2>
+            <p>Fitur lanjutan Shortir File.</p>
+            <div class="tools-grid">
+              <button class="btn btn-outline tool-item" id="tool-duplicates" type="button" title="Cari file dengan nama dan ukuran yang sama"><span class="tool-icon">◈</span><span class="tool-copy"><strong>Cari duplikat</strong><small>Temukan file kembar</small></span></button>
+              <button class="btn btn-outline tool-item" id="tool-rules" type="button" title="Pindahkan file berdasarkan ekstensi"><span class="tool-icon">☷</span><span class="tool-copy"><strong>Aturan sortir</strong><small>Sortir berdasarkan tipe</small></span></button>
+              <button class="btn btn-outline tool-item" id="tool-history" type="button" title="Lihat aktivitas pemindahan dan penyalinan"><span class="tool-icon">↶</span><span class="tool-copy"><strong>Riwayat aktivitas</strong><small>Lihat aksi sebelumnya</small></span></button>
+            </div>
+            <div class="account-row"><span class="spacer"></span><button class="btn btn-primary" id="tools-close" type="button">Tutup</button></div>
+          </div>
+        </div>
+
+        <div class="app-shell" id="shell">
+          <div class="topbar">
+            <div class="app-brand">
+              <img src="assets/shortir_file_icon.png" alt="Shortir File" />
+              <div><strong>Shortir File</strong><span>Atur file dengan mudah</span></div>
+            </div>
+            <button class="btn btn-outline btn-small" id="btn-undo" disabled>↩ Undo</button>
+            <button class="btn btn-outline btn-small" id="btn-undoall" disabled>↩ Undo Semua</button>
+            <button class="btn btn-outline btn-small" id="btn-redo" disabled>↪ Redo</button>
+            <button class="btn btn-outline btn-small" id="btn-redoall" disabled>↪ Redo Semua</button>
+            <button class="btn btn-outline btn-small hidden" id="btn-account">Akun</button>
+            <button class="btn btn-outline btn-small" id="btn-lang">EN</button>
+            <button class="btn btn-outline btn-small" id="btn-theme">◐</button>
+          </div>
+
+          <div class="searchrow">
+            <input id="search" type="text" placeholder="Ketik nama file, pisahkan dengan koma, spasi, atau Enter…" autocomplete="off" />
+            <button class="btn btn-outline" id="btn-add">+ Tambah</button>
+          </div>
+
+          <div class="chipbar" id="chipbar"></div>
+
+          <div class="filelist">
+            <div class="filelist-head">
+              <span id="count-label">0 file</span>
+              <select id="ext" class="btn btn-outline btn-small" title="Filter format">
+                <option value="all">Semua format</option>
+              </select>
+              <select id="sort" class="btn btn-outline btn-small" title="Urutan">
+                <option value="name">Nama</option>
+                <option value="type">Tipe</option>
+                <option value="size">Ukuran</option>
+                <option value="date">Tanggal</option>
+              </select>
+              <button class="btn btn-outline btn-small" id="btn-reset">Reset</button>
+              <button class="btn btn-outline btn-small" id="btn-tools">Tools</button>
+              <span class="spacer"></span>
+              <div class="seg" id="type-seg">
+                <button data-type="photos" class="on">Foto</button>
+                <button data-type="documents">Dokumen</button>
+                <button data-type="all">Semua</button>
+              </div>
+              <button class="btn btn-outline btn-small" id="btn-selectall">Pilih Semua</button>
+              <div class="seg" id="view-seg">
+                <button data-view="list" class="on">Daftar</button>
+                <button data-view="grid">Ikon</button>
+              </div>
+            </div>
+            <div class="items" id="items"></div>
+          </div>
+
+          <div class="selection-preview" id="selection-preview" hidden></div>
+
+          <div class="actionbar">
+            <div class="seg" id="op-seg">
+              <button data-op="move" class="on">Pindahkan</button>
+              <button data-op="copy">Salin</button>
+            </div>
+            <button class="btn btn-primary" id="btn-action" disabled>Pindahkan Pilihan</button>
+            <span class="spacer"></span>
+            <span class="status" id="status"></span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer section-shell">
+      <div class="footer-brand">
+        <a class="brand" href="index.html"><img src="assets/shortir_file_icon.png" alt="" /><span>shortir<span class="brand-mark">.</span></span></a>
+        <p>Less clutter. More room.</p>
+      </div>
+      <div class="footer-links">
+        <a href="index.html#cara-kerja">Cara kerja</a>
+        <a href="index.html#fitur">Fitur</a>
+        <a href="index.html#harga">Harga</a>
+        <a href="index.html#privasi">Privasi</a>
+        <a href="galeri.html">Galeri</a>
+        <a href="shortir.html">Versi web</a>
+      </div>
+      <div class="footer-legal">
+        <span>© 2026 Shortir Studio</span>
+        <span>Dibuat dengan dedikasi di Jakarta</span>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const I18N = {
+        id: {
+          source: 'Pilih Folder Sumber', dest: 'Pilih Folder Tujuan', destNone: 'Tujuan: belum dipilih',
+          undo: 'Undo', undoAll: 'Undo Semua', redo: 'Redo', redoAll: 'Redo Semua',
+          add: '+ Tambah', move: 'Pindahkan', copy: 'Salin', moveSel: 'Pindahkan Pilihan', copySel: 'Salin Pilihan',
+          selectAll: 'Pilih Semua', clearAll: 'Bersihkan Semua', photos: 'Foto', documents: 'Dokumen', all: 'Semua',
+          list: 'Daftar', grid: 'Ikon', name: 'Nama', type: 'Tipe', size: 'Ukuran', date: 'Tanggal', reset: 'Reset',
+          start: 'Pilih folder sumber untuk mulai.', pickSource: 'Pilih folder sumber untuk mulai.',
+          empty: 'Pilih folder sumber untuk melihat berkas.', chooseSource: 'Pilih berkas sumber', chooseSourceButton: 'Pilih Folder', sourceNote: 'Mulai dari folder yang berisi foto atau dokumen yang ingin kamu rapikan.', none: 'Tidak ada berkas yang cocok.',
+          found: 'file ditemukan', notFound: 'nama file tidak ditemukan', notFoundNames: 'Nama tidak ditemukan:',
+          undoLast: 'Batalkan tindakan terakhir?', undoAllQ: 'Batalkan semua tindakan?', confirmUndo: 'File akan dikembalikan ke lokasi sebelumnya.',
+          yes: 'Undo', yesAll: 'Undo Semua', cancel: 'Batal', undone: 'Tindakan terakhir dibatalkan.', undoneAll: 'Semua tindakan dibatalkan.',
+          redone: 'Tindakan diulang kembali.', redoneAll: 'Semua tindakan diulang kembali.',
+          moved: 'berkas dipindahkan', copied: 'berkas disalin', failed: 'gagal',
+          processing: 'Memproses', invalidDest: 'Pilih folder tujuan dulu.', noSel: 'Pilih minimal satu berkas.',
+          unsup: 'Browser ini belum mendukung File System Access API. Gunakan Chrome atau Edge versi desktop.',
+        },
+        en: {
+          source: 'Choose Source Folder', dest: 'Choose Destination Folder', destNone: 'Destination: not chosen',
+          undo: 'Undo', undoAll: 'Undo All', redo: 'Redo', redoAll: 'Redo All',
+          add: '+ Add', move: 'Move', copy: 'Copy', moveSel: 'Move Selected', copySel: 'Copy Selected',
+          selectAll: 'Select All', clearAll: 'Clear All', photos: 'Photos', documents: 'Documents', all: 'All',
+          list: 'List', grid: 'Grid', name: 'Name', type: 'Type', size: 'Size', date: 'Date', reset: 'Reset',
+          start: 'Choose a source folder to begin.', pickSource: 'Choose a source folder to begin.',
+          empty: 'Choose a source folder to see files.', chooseSource: 'Choose source files', chooseSourceButton: 'Choose Folder', sourceNote: 'Start with a folder containing the photos or documents you want to organize.', none: 'No matching files.',
+          found: 'files found', notFound: 'file names not found', notFoundNames: 'Names not found:',
+          undoLast: 'Undo last action?', undoAllQ: 'Undo all actions?', confirmUndo: 'Files will be restored to their previous location.',
+          yes: 'Undo', yesAll: 'Undo All', cancel: 'Cancel', undone: 'Last action undone.', undoneAll: 'All actions undone.',
+          redone: 'Action redone.', redoneAll: 'All actions redone.',
+          moved: 'files moved', copied: 'files copied', failed: 'failed',
+          processing: 'Processing', invalidDest: 'Choose a destination folder first.', noSel: 'Select at least one file.',
+          unsup: 'This browser does not support the File System Access API. Use Chrome or Edge desktop.',
+        },
+      };
+
+      const PHOTOS = new Set(['3fr', 'ari', 'arw', 'avif', 'bmp', 'cr2', 'cr3', 'dng', 'gif', 'heic', 'heif', 'jpeg', 'jpg', 'nef', 'orf', 'png', 'raf', 'raw', 'rw2', 'svg', 'tif', 'tiff', 'webp']);
+      const DOCS = new Set(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'txt', 'md', 'rtf', 'epub', 'pages', 'numbers', 'key', 'odt', 'ods', 'odp']);
+      const FREE_FILE_LIMIT = 100;
+      const FREE_SORT_LIMIT = 3;
+      const nums = (n) => n.toLocaleString('id-ID');
+
+      const $ = (id) => document.getElementById(id);
+      const state = {
+        lang: 'id', dark: false, srcHandle: null, destHandle: null, files: [], names: [],
+        selected: new Set(), view: 'list', type: 'photos', ext: 'all', sort: 'name', op: 'move',
+        history: [], redo: [], busy: false, isPro: false, planExpiresAt: null, sortsUsed: 0, rules: [],
+      };
+      const t = (k) => (I18N[state.lang][k] ?? k);
+
+      const extOf = (name) => { const i = name.lastIndexOf('.'); return i > 0 ? name.slice(i + 1).toLowerCase() : ''; };
+      const norm = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, '');
+      const nameOnly = (name) => { const i = name.lastIndexOf('.'); return i > 0 ? name.slice(0, i) : name; };
+      const fmtSize = (b) => {
+        if (b < 1024) return b + ' B';
+        if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+        if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB';
+        return (b / 1073741824).toFixed(1) + ' GB';
+      };
+      const RAW_EXTS = new Set(['3fr', 'ari', 'arw', 'cr2', 'cr3', 'dng', 'nef', 'orf', 'raf', 'raw', 'rw2']);
+      const SVG_IMAGE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-5-5L5 20"/></svg>';
+      const SVG_DOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+      const SVG_FOLDER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z"/><path d="M3 9h18"/></svg>';
+      const supportsFS = () => 'showDirectoryPicker' in window;
+
+      function applySkin() {
+        const shell = $('shell');
+        shell.classList.toggle('dark', state.dark);
+        document.body.classList.toggle('night-mode', state.dark);
+        $('btn-theme').textContent = state.dark ? '◑' : '◐';
+        $('btn-lang').textContent = state.lang === 'id' ? 'EN' : 'ID';
+        translateStatic();
+      }
+
+      function translateStatic() {
+        $('btn-add').textContent = t('add');
+        $('btn-undo').textContent = '↩ ' + t('undo');
+        $('btn-undoall').textContent = '↩ ' + t('undoAll');
+        $('btn-redo').textContent = '↪ ' + t('redo');
+        $('btn-redoall').textContent = '↪ ' + t('redoAll');
+        $('btn-reset').textContent = t('reset');
+        $('btn-selectall').textContent = state.selected.size ? t('clearAll') : t('selectAll');
+        document.querySelectorAll('#op-seg button').forEach((b) => { b.textContent = t(b.dataset.op); });
+        document.querySelectorAll('#type-seg button').forEach((b) => { b.textContent = t(b.dataset.type); });
+        document.querySelectorAll('#view-seg button').forEach((b) => { b.textContent = t(b.dataset.view); });
+        const sortSel = $('sort');
+        sortSel.options[0].textContent = t('name');
+        sortSel.options[1].textContent = t('type');
+        sortSel.options[2].textContent = t('size');
+        sortSel.options[3].textContent = t('date');
+        $('btn-action').textContent = state.op === 'copy' ? t('copySel') : t('moveSel');
+        const search = $('search');
+        if (!search.dataset.placeholderSet) {
+          search.dataset.placeholderSet = '1';
+          search.placeholder = state.lang === 'id'
+            ? 'Ketik nama file, pisahkan dengan koma, spasi, atau Enter…'
+            : 'Type file names, separate with commas, spaces, or Enter…';
+        }
+      }
+
+      async function pickSource() {
+        if (!supportsFS()) return;
+        try {
+          const handle = await window.showDirectoryPicker({ mode: 'read' });
+          state.srcHandle = handle;
+          state.files = [];
+          state.selected.clear();
+          state.names = [];
+          $('search').value = '';
+          for await (const entry of handle.values()) {
+            if (entry.kind !== 'file') continue;
+            if (entry.name.startsWith('._') || entry.name === '.DS_Store') continue;
+            const file = await entry.getFile();
+            state.files.push({ handle: entry, name: entry.name, size: file.size, lastModified: file.lastModified });
+          }
+          state.files.sort((a, b) => a.name.localeCompare(b.name));
+          renderChips();
+          setStatus(t('pickSource'));
+          render();
+        } catch (err) {
+          if (err.name !== 'AbortError') setStatus('❌ ' + (err.message || err));
+        }
+      }
+
+      async function pickDest() {
+        if (!supportsFS()) return;
+        try {
+          const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+          state.destHandle = handle;
+          render();
+        } catch (err) {
+          if (err.name !== 'AbortError') setStatus('❌ ' + (err.message || err));
+        }
+      }
+
+      function addName(raw) {
+        const value = raw.trim();
+        if (!value) return;
+        const quoted = /^["'`“”‘’]/.test(value) && /["'`“”‘’]$/.test(value);
+        const words = value.split(/[\s,]+/).filter(Boolean);
+        const exactFile = state.files.some((file) =>
+          norm(file.name) === norm(value) || norm(nameOnly(file.name)) === norm(value),
+        );
+        const items = quoted || exactFile || words.length < 2
+          ? [value.replace(/^["'`“”‘’]+|["'`“”‘’]+$/g, '')]
+          : words;
+        for (const item of items) {
+          const clean = item.replace(/^["'`“”‘’]+|["'`“”‘’]+$/g, '').trim();
+          if (clean && !state.names.includes(clean)) state.names.push(clean);
+        }
+        $('search').value = '';
+        renderChips();
+        render();
+      }
+
+      function renderChips() {
+        const bar = $('chipbar');
+        bar.innerHTML = '';
+        for (const name of state.names) {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.textContent = name;
+          const x = document.createElement('button');
+          x.type = 'button';
+          x.textContent = '×';
+          x.onclick = () => {
+            state.names = state.names.filter((n) => n !== name);
+            renderChips();
+            render();
+          };
+          chip.appendChild(x);
+          bar.appendChild(chip);
+        }
+      }
+
+      function matchesType(file) {
+        const ext = extOf(file.name);
+        if (state.type === 'photos') return PHOTOS.has(ext);
+        if (state.type === 'documents') return DOCS.has(ext);
+        return true;
+      }
+
+      function matchesExt(file) {
+        return state.ext === 'all' || extOf(file.name) === state.ext;
+      }
+
+      function matchesNameQuery(file, query) {
+        const needle = norm(query);
+        const fullName = norm(file.name);
+        const baseName = norm(nameOnly(file.name));
+        return fullName === needle || baseName === needle ||
+          fullName.includes(needle) || baseName.includes(needle);
+      }
+
+      function matchesNames(file) {
+        if (!state.names.length) return true;
+        return state.names.some((name) => matchesNameQuery(file, name));
+      }
+
+      function availableExts() {
+        const set = state.type === 'photos' ? PHOTOS : state.type === 'documents' ? DOCS : new Set([...PHOTOS, ...DOCS]);
+        return [...set].sort();
+      }
+
+      function renderExtSelect() {
+        const sel = $('ext');
+        const current = state.ext;
+        const available = availableExts();
+        if (state.ext !== 'all' && !available.includes(state.ext)) state.ext = 'all';
+        sel.innerHTML = '';
+        const allOpt = document.createElement('option');
+        allOpt.value = 'all';
+        allOpt.textContent = 'Semua format';
+        sel.appendChild(allOpt);
+        for (const ext of available) {
+          const opt = document.createElement('option');
+          opt.value = ext;
+          opt.textContent = ext.toUpperCase();
+          sel.appendChild(opt);
+        }
+        sel.value = current === 'all' || available.includes(current) ? current : 'all';
+        state.ext = sel.value;
+      }
+
+      function sortList(list) {
+        const arr = list.slice();
+        arr.sort((a, b) => {
+          switch (state.sort) {
+            case 'type': return extOf(a.name).localeCompare(extOf(b.name)) || a.name.localeCompare(b.name);
+            case 'size': return a.size - b.size;
+            case 'date': return a.lastModified - b.lastModified;
+            default: return a.name.localeCompare(b.name);
+          }
+        });
+        return arr;
+      }
+
+      function listMatches() {
+        return sortList(state.files.filter((f) => matchesType(f) && matchesExt(f) && matchesNames(f)));
+      }
+
+      function missingNames() {
+        if (!state.names.length) return [];
+        return state.names.filter((name) => !state.files.some((file) => matchesNameQuery(file, name)));
+      }
+
+      function render() {
+        renderExtSelect();
+        const matches = listMatches();
+        const missing = missingNames();
+        $('count-label').textContent = nums(matches.length) + ' ' + t('found') +
+          (missing.length ? ' · ' + nums(missing.length) + ' ' + t('notFound') : '');
+        const wrap = $('items');
+        wrap.innerHTML = '';
+        if (!state.srcHandle) {
+          wrap.innerHTML = '<div class="empty empty-state"><div class="empty-icon">' + SVG_FOLDER +
+            '</div><p class="empty-note">' +
+            t('sourceNote') + '</p><button class="btn btn-primary" id="btn-empty-source" type="button"><span class="button-icon">' +
+            SVG_FOLDER + '</span>' + t('chooseSourceButton') + '</button></div>';
+          $('btn-empty-source').onclick = pickSource;
+        } else if (!matches.length) {
+          wrap.innerHTML = '<div class="empty">' + t('none') + '</div>';
+        } else {
+          for (const f of matches) wrap.appendChild(itemEl(f));
+        }
+        renderSelectionPreview();
+        const anySelected = state.selected.size > 0;
+        $('btn-action').disabled = state.busy || !anySelected;
+        $('btn-selectall').textContent = matches.length && matches.every((f) => state.selected.has(f.handle)) ? t('clearAll') : t('selectAll');
+        $('btn-undo').disabled = state.busy || !state.history.length;
+        $('btn-undoall').disabled = state.busy || !state.history.length;
+        $('btn-redo').disabled = state.busy || !state.redo.length;
+        $('btn-redoall').disabled = state.busy || !state.redo.length;
+        $('btn-action').textContent = state.op === 'copy' ? t('copySel') : t('moveSel');
+      }
+
+      function itemEl(f) {
+        const el = document.createElement('div');
+        el.className = 'item' + (state.selected.has(f.handle) ? ' selected' : '');
+        const ext = extOf(f.name);
+        const thumb = document.createElement('div');
+        thumb.className = 'thumb';
+        if (RAW_EXTS.has(ext)) {
+          thumb.innerHTML = SVG_IMAGE;
+        } else if (PHOTOS.has(ext)) {
+          thumb.innerHTML = SVG_IMAGE;
+          f.handle.getFile().then((file) => {
+            const url = URL.createObjectURL(file);
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = f.name;
+            img.onerror = () => {
+              thumb.innerHTML = SVG_IMAGE;
+            };
+            thumb.textContent = '';
+            thumb.appendChild(img);
+          }).catch(() => {
+            thumb.innerHTML = SVG_IMAGE;
+          });
+        } else {
+          thumb.innerHTML = SVG_DOC;
+        }
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const name = document.createElement('div');
+        name.className = 'name';
+        name.textContent = f.name;
+        name.title = f.name;
+        const sub = document.createElement('div');
+        sub.className = 'sub';
+        sub.textContent = ext.toUpperCase() + (f.size ? ' • ' + fmtSize(f.size) : '');
+        meta.appendChild(name);
+        meta.appendChild(sub);
+        const check = document.createElement('div');
+        check.className = 'check';
+        check.textContent = '✓';
+        el.appendChild(thumb);
+        el.appendChild(meta);
+        el.appendChild(check);
+        el.onclick = () => {
+          if (state.selected.has(f.handle)) state.selected.delete(f.handle);
+          else state.selected.add(f.handle);
+          render();
+        };
+        return el;
+      }
+
+      function setStatus(text) {
+        $('status').textContent = text;
+      }
+
+      function requirePro() {
+        if (!SB || state.isPro) return true;
+        setStatus(state.lang === 'id'
+          ? 'Fitur ini khusus Pro. Buka Pengelola Akun untuk upgrade.'
+          : 'This feature is for Pro accounts. Open Account Manager to upgrade.');
+        return false;
+      }
+
+      function selectedFiles() {
+        return state.files.filter((file) => state.selected.has(file.handle));
+      }
+
+      function renderSelectionPreview() {
+        const box = $('selection-preview');
+        const files = selectedFiles();
+        box.innerHTML = '';
+        box.hidden = !files.length;
+        if (!files.length) return;
+        for (const file of files.slice(0, 8)) {
+          const item = document.createElement('div');
+          item.className = 'selection-preview-item';
+          const thumb = document.createElement('div');
+          thumb.className = 'selection-preview-thumb';
+          thumb.innerHTML = PHOTOS.has(extOf(file.name)) ? SVG_IMAGE : SVG_DOC;
+          if (PHOTOS.has(extOf(file.name))) {
+            file.handle.getFile().then((blob) => {
+              const image = document.createElement('img');
+              image.src = URL.createObjectURL(blob);
+              image.alt = file.name;
+              thumb.textContent = '';
+              thumb.appendChild(image);
+            }).catch(() => {
+              thumb.innerHTML = SVG_IMAGE;
+            });
+          }
+          const name = document.createElement('span');
+          name.className = 'selection-preview-name';
+          name.textContent = file.name;
+          name.title = file.name;
+          item.append(thumb, name);
+          box.appendChild(item);
+        }
+        if (files.length > 8) {
+          const more = document.createElement('span');
+          more.className = 'selection-preview-more';
+          more.textContent = '+' + (files.length - 8) + ' file lainnya';
+          box.appendChild(more);
+        }
+      }
+
+      async function previewSelected() {
+        if (!requirePro()) return;
+        const file = selectedFiles()[0];
+        if (!file) {
+          setStatus(state.lang === 'id' ? 'Pilih file untuk preview.' : 'Select a file to preview.');
+          return;
+        }
+        const blob = await file.handle.getFile();
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank', 'noopener');
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }
+
+      function findDuplicates() {
+        if (!requirePro()) return;
+        const groups = new Map();
+        for (const file of state.files) {
+          const key = file.size + ':' + file.name.toLowerCase();
+          const group = groups.get(key) || [];
+          group.push(file.name);
+          groups.set(key, group);
+        }
+        const duplicates = [...groups.values()].filter((group) => group.length > 1);
+        setStatus(duplicates.length
+          ? (state.lang === 'id' ? duplicates.length + ' grup duplikat ditemukan.' : duplicates.length + ' duplicate groups found.')
+          : (state.lang === 'id' ? 'Tidak ada duplikat ditemukan.' : 'No duplicates found.'));
+        if (duplicates.length) window.alert(duplicates.map((group) => group.join(', ')).join('\n'));
+      }
+
+      function downloadJson(filename, value) {
+        const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      }
+
+      let lastPaymentOrderId = null;
+
+      async function checkPaymentStatus() {
+        if (!SB || !lastPaymentOrderId) {
+          setStatus(state.lang === 'id' ? 'Belum ada pembayaran yang sedang dicek.' : 'There is no payment to check.');
+          return;
+        }
+        try {
+          await SB.functions.invoke('check-midtrans-status', { body: { order_id: lastPaymentOrderId } });
+          const { data } = await SB.auth.getSession();
+          await loadPlan(data.session);
+          setStatus(state.isPro
+            ? (state.lang === 'id' ? 'Pembayaran terverifikasi. Pro aktif.' : 'Payment verified. Pro is active.')
+            : (state.lang === 'id' ? 'Pembayaran belum terverifikasi.' : 'Payment has not been verified yet.'));
+        } catch (error) {
+          setStatus((state.lang === 'id' ? 'Gagal cek pembayaran: ' : 'Payment check failed: ') + error.message);
+        }
+      }
+
+      async function upgradeToPro() {
+        if (!SB) return;
+        const yearly = window.confirm(state.lang === 'id' ? 'Pilih OK untuk paket tahunan. Pilih Batal untuk bulanan.' : 'Choose OK for yearly plan. Choose Cancel for monthly.');
+        const plan = yearly ? 'yearly' : 'monthly';
+        const amount = yearly ? 150000 : 15000;
+        try {
+          const { data, error } = await SB.functions.invoke('create-midtrans-qris', {
+            body: { amount, plan, description: 'Shortir File Pro ' + plan },
+          });
+          if (error) throw error;
+          lastPaymentOrderId = data?.order_id || null;
+          const qr = data?.qr_base64;
+          if (qr) {
+            const popup = window.open('', '_blank');
+            if (popup) {
+              popup.document.write('<title>Shortir File - QRIS</title><p>Pindai QRIS untuk menyelesaikan pembayaran.</p><img style="max-width:90vw" src="data:image/png;base64,' + qr + '" />');
+              popup.document.close();
+            }
+          } else if (data?.qr_url) {
+            window.open(data.qr_url, '_blank', 'noopener');
+          }
+          setStatus(state.lang === 'id' ? 'QRIS dibuat. Selesaikan pembayaran lalu cek status.' : 'QR payment created. Complete it, then check status.');
+        } catch (error) {
+          setStatus((state.lang === 'id' ? 'Gagal upgrade: ' : 'Upgrade failed: ') + error.message);
+        }
+      }
+
+      function exportOperationLog() {
+        if (!requirePro()) return;
+        downloadJson('shortir-operation-log.json', state.history);
+        setStatus(state.lang === 'id' ? 'Log lokal berhasil diunduh.' : 'Local log downloaded.');
+      }
+
+      function exportMetadataBackup() {
+        if (!requirePro()) return;
+        downloadJson('shortir-metadata-backup.json', {
+          createdAt: new Date().toISOString(),
+          operation: state.op,
+          rules: state.rules,
+          operations: state.history,
+        });
+        setStatus(state.lang === 'id' ? 'Backup metadata berhasil diunduh.' : 'Metadata backup downloaded.');
+      }
+
+      function showHistory() {
+        if (!requirePro()) return;
+        const text = state.history.length
+          ? state.history.map((entry, index) => `${index + 1}. ${entry.op === 'copy' ? 'Salin' : 'Pindahkan'}: ${entry.name}`).join('\n')
+          : (state.lang === 'id' ? 'Belum ada aktivitas.' : 'No activity yet.');
+        window.alert(text);
+      }
+
+      async function addSortRule() {
+        if (!requirePro()) return;
+        const extension = window.prompt(state.lang === 'id' ? 'Ekstensi file (contoh: jpg):' : 'File extension (example: jpg):');
+        const destination = window.prompt(state.lang === 'id' ? 'Nama folder tujuan:' : 'Destination folder name:');
+        if (!extension || !destination || !state.srcHandle || !state.destHandle) {
+          setStatus(state.lang === 'id' ? 'Pilih folder sumber dan tujuan terlebih dahulu.' : 'Choose source and destination folders first.');
+          return;
+        }
+        const rule = { extension: extension.replace(/^\./, '').toLowerCase(), destination };
+        state.rules.push(rule);
+        for (const file of state.files.filter((item) => extOf(item.name) === rule.extension)) {
+          try {
+            const folder = await state.destHandle.getDirectoryHandle(rule.destination, { create: true });
+            await transferFileTo(file.handle, file.name, folder, state.op === 'move');
+            state.history.push({ op: state.op, name: file.name });
+          } catch (_) {}
+        }
+        if (state.op === 'move') state.files = state.files.filter((file) => extOf(file.name) !== rule.extension);
+        render();
+        setStatus(state.lang === 'id' ? 'Aturan sortir diterapkan.' : 'Sort rule applied.');
+      }
+
+      async function transfer(f, copy) {
+        const file = await f.handle.getFile();
+        const target = await state.destHandle.getFileHandle(file.name, { create: true });
+        const writable = await target.createWritable();
+        await writable.write(file);
+        await writable.close();
+        if (!copy) await f.handle.remove();
+      }
+
+      async function transferFileTo(srcHandle, srcName, destDir, removeSource) {
+        const file = await srcHandle.getFile();
+        const target = await destDir.getFileHandle(srcName, { create: true });
+        const writable = await target.createWritable();
+        await writable.write(file);
+        await writable.close();
+        if (removeSource) await srcHandle.remove();
+      }
+
+      async function run(copy) {
+        const items = listMatches().filter((f) => state.selected.has(f.handle));
+        if (!items.length) return;
+        if (!state.destHandle) {
+          setStatus(state.lang === 'id' ? 'Pilih folder tujuan untuk melanjutkan.' : 'Choose a destination folder to continue.');
+          await pickDest();
+          if (!state.destHandle) return;
+        }
+        if (SB && !state.isPro && items.length > FREE_FILE_LIMIT) {
+          setStatus(state.lang === 'id'
+            ? 'Paket Gratis maksimal ' + FREE_FILE_LIMIT + ' berkas per sortir. Upgrade ke Pro untuk tanpa batas.'
+            : 'Free plan allows up to ' + FREE_FILE_LIMIT + ' files per sort. Upgrade to Pro for unlimited sorting.');
+          return;
+        }
+        if (SB && !state.isPro && state.sortsUsed >= FREE_SORT_LIMIT) {
+          setStatus(state.lang === 'id'
+            ? 'Kuota Gratis ' + FREE_SORT_LIMIT + ' sortir bulan ini sudah habis. Upgrade ke Pro untuk melanjutkan.'
+            : 'Free quota of ' + FREE_SORT_LIMIT + ' sorts this month is used up. Upgrade to Pro to continue.');
+          return;
+        }
+        state.busy = true;
+        render();
+        let done = 0;
+        let failed = 0;
+        const entries = [];
+        setStatus(t('processing') + ' 0/' + items.length + '…');
+        for (const f of items) {
+          try {
+            await transfer(f, copy);
+            done++;
+            entries.push({ op: copy ? 'copy' : 'move', name: f.name });
+          } catch (err) {
+            failed++;
+          }
+          setStatus(t('processing') + ' ' + done + '/' + items.length + '…');
+        }
+        if (!copy) {
+          const moved = new Set(items.map((f) => f.handle));
+          state.files = state.files.filter((f) => !moved.has(f.handle));
+          state.selected.clear();
+        }
+        if (entries.length) {
+          state.history.push(...entries);
+          state.redo = [];
+          if (SB && !state.isPro) {
+            const { data } = await SB.auth.getUser();
+            if (data.user) {
+              state.sortsUsed += 1;
+              writeSortUsage(data.user.id, state.sortsUsed);
+            }
+          }
+        }
+        state.busy = false;
+        render();
+        const label = copy ? t('copied') : t('moved');
+        setStatus(done + ' ' + label + (failed ? ', ' + failed + ' ' + t('failed') : '') + '.');
+      }
+
+      function confirmDialog(title, message, okLabel) {
+        return new Promise((resolve) => {
+          if (!window.confirm(title + '\n\n' + message)) return resolve(false);
+          resolve(true);
+        });
+      }
+
+      function entryLabel(e) {
+        return (e.op === 'copy' ? '⇄ ' : '⇄ ') + e.name;
+      }
+
+      async function undoLast() {
+        if (!state.history.length || state.busy) return;
+        const entry = state.history[state.history.length - 1];
+        const ok = await confirmDialog(t('undoLast'), t('confirmUndo'), t('yes'));
+        if (!ok) return;
+        state.busy = true;
+        render();
+        let okEntry = false;
+        try {
+          if (entry.op === 'copy') {
+            const target = await state.destHandle.getFileHandle(entry.name);
+            await target.remove();
+            okEntry = true;
+          } else {
+            await transferFileTo(state.destHandle, entry.name, state.srcHandle, true);
+            state.files.push({ handle: await state.srcHandle.getFileHandle(entry.name), name: entry.name, size: 0, lastModified: Date.now() });
+            state.files.sort((a, b) => a.name.localeCompare(b.name));
+            okEntry = true;
+          }
+        } catch (err) {
+          setStatus('❌ ' + (err.message || err));
+        }
+        if (okEntry) {
+          state.history.pop();
+          state.redo.push(entry);
+          setStatus(t('undone'));
+        }
+        state.busy = false;
+        render();
+      }
+
+      async function undoAll() {
+        if (!state.history.length || state.busy) return;
+        const ok = await confirmDialog(t('undoAllQ'), t('confirmUndo'), t('yesAll'));
+        if (!ok) return;
+        state.busy = true;
+        render();
+        const entries = state.history.slice();
+        const undone = [];
+        for (const entry of entries.reverse()) {
+          try {
+            if (entry.op === 'copy') {
+              const target = await state.destHandle.getFileHandle(entry.name);
+              await target.remove();
+            } else {
+              await transferFileTo(state.destHandle, entry.name, state.srcHandle, true);
+            }
+            undone.push(entry);
+          } catch (err) {}
+        }
+        state.history = state.history.filter((e) => !undone.includes(e));
+        state.redo.push(...undone);
+        state.files = [];
+        for await (const entry of state.srcHandle.values()) {
+          if (entry.kind === 'file') {
+            if (entry.name.startsWith('._') || entry.name === '.DS_Store') continue;
+            const file = await entry.getFile();
+            state.files.push({ handle: entry, name: entry.name, size: file.size, lastModified: file.lastModified });
+          }
+        }
+        state.files.sort((a, b) => a.name.localeCompare(b.name));
+        state.selected.clear();
+        state.busy = false;
+        setStatus(undone.length + ' ' + t('undoneAll') + (undone.length < entries.length ? ' (' + (entries.length - undone.length) + ' ' + t('failed') + ')' : ''));
+        render();
+      }
+
+      async function redoLast() {
+        if (!state.redo.length || state.busy) return;
+        const entry = state.redo[state.redo.length - 1];
+        state.busy = true;
+        render();
+        let okEntry = false;
+        try {
+          if (entry.op === 'copy') {
+            await transferFileTo(state.srcHandle, entry.name, state.destHandle, false);
+            okEntry = true;
+          } else {
+            await transferFileTo(state.srcHandle, entry.name, state.destHandle, true);
+            state.files = state.files.filter((f) => f.name !== entry.name);
+            okEntry = true;
+          }
+        } catch (err) {
+          setStatus('❌ ' + (err.message || err));
+        }
+        if (okEntry) {
+          state.redo.pop();
+          state.history.push(entry);
+          setStatus(t('redone'));
+        }
+        state.busy = false;
+        render();
+      }
+
+      async function redoAll() {
+        if (!state.redo.length || state.busy) return;
+        state.busy = true;
+        render();
+        const entries = state.redo.slice();
+        const redone = [];
+        for (const entry of entries.reverse()) {
+          try {
+            if (entry.op === 'copy') {
+              await transferFileTo(state.srcHandle, entry.name, state.destHandle, false);
+            } else {
+              await transferFileTo(state.srcHandle, entry.name, state.destHandle, true);
+            }
+            redone.push(entry);
+          } catch (err) {}
+        }
+        state.redo = state.redo.filter((e) => !redone.includes(e));
+        state.history.push(...redone);
+        state.files = state.files.filter((f) => !redone.some((e) => e.op === 'move' && e.name === f.name));
+        state.busy = false;
+        setStatus(redone.length + ' ' + t('redoneAll') + (redone.length < entries.length ? ' (' + (entries.length - redone.length) + ' ' + t('failed') + ')' : ''));
+        render();
+      }
+
+      $('btn-add').onclick = () => addName($('search').value);
+      $('search').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addName($('search').value);
+        }
+      });
+      $('btn-action').onclick = () => run(state.op === 'copy');
+      $('btn-undo').onclick = () => { if (requirePro()) undoLast(); };
+      $('btn-undoall').onclick = () => { if (requirePro()) undoAll(); };
+      $('btn-redo').onclick = () => { if (requirePro()) redoLast(); };
+      $('btn-redoall').onclick = () => { if (requirePro()) redoAll(); };
+      $('btn-tools').onclick = () => {
+        if (requirePro()) $('tools-overlay').classList.remove('hidden');
+      };
+      $('tools-close').onclick = () => $('tools-overlay').classList.add('hidden');
+      $('tool-duplicates').onclick = findDuplicates;
+      $('tool-rules').onclick = addSortRule;
+      $('tool-history').onclick = showHistory;
+      $('btn-lang').onclick = () => {
+        state.lang = state.lang === 'id' ? 'en' : 'id';
+        const search = $('search');
+        search.placeholder = state.lang === 'id'
+          ? 'Ketik nama file, pisahkan dengan koma, spasi, atau Enter…'
+          : 'Type file names, separate with commas, spaces, or Enter…';
+        applySkin();
+        renderChips();
+        render();
+      };
+      $('btn-theme').onclick = () => {
+        state.dark = !state.dark;
+        applySkin();
+      };
+      $('btn-reset').onclick = () => {
+        state.srcHandle = null;
+        state.destHandle = null;
+        state.files = [];
+        state.names = [];
+        state.selected.clear();
+        state.history = [];
+        state.redo = [];
+        $('search').value = '';
+        renderChips();
+        render();
+        setStatus(t('start'));
+      };
+      $('btn-selectall').onclick = () => {
+        const matches = listMatches();
+        const all = matches.length && matches.every((f) => state.selected.has(f.handle));
+        if (all) matches.forEach((f) => state.selected.delete(f.handle));
+        else matches.forEach((f) => state.selected.add(f.handle));
+        render();
+      };
+      $('sort').onchange = (e) => {
+        state.sort = e.target.value;
+        render();
+      };
+      $('ext').onchange = (e) => {
+        state.ext = e.target.value;
+        render();
+      };
+      document.querySelectorAll('#type-seg button').forEach((b) => {
+        b.onclick = () => {
+          state.type = b.dataset.type;
+          state.ext = 'all';
+          document.querySelectorAll('#type-seg button').forEach((x) => x.classList.toggle('on', x === b));
+          render();
+        };
+      });
+      document.querySelectorAll('#view-seg button').forEach((b) => {
+        b.onclick = () => {
+          state.view = b.dataset.view;
+          $('items').classList.toggle('grid', state.view === 'grid');
+          document.querySelectorAll('#view-seg button').forEach((x) => x.classList.toggle('on', x === b));
+          render();
+        };
+      });
+      document.querySelectorAll('#op-seg button').forEach((b) => {
+        b.onclick = () => {
+          state.op = b.dataset.op;
+          document.querySelectorAll('#op-seg button').forEach((x) => x.classList.toggle('on', x === b));
+          render();
+        };
+      });
+
+      const SB = (window.supabase && window.SUPABASE_URL)
+        ? window.supabase.createClient(
+            window.SUPABASE_URL,
+            window.SUPABASE_ANON_KEY || window.SUPABASE_PUBLISHABLE_KEY,
+          )
+        : null;
+      const overlay = $('login-overlay');
+      const accountOverlay = $('account-overlay');
+      const accountBtn = $('btn-account');
+      const shellEl = $('shell');
+
+      function usageKey(userId) {
+        const month = new Date().toISOString().slice(0, 7);
+        return 'shortir-web-usage:' + userId + ':' + month;
+      }
+
+      function readSortUsage(userId) {
+        try {
+          return Number(localStorage.getItem(usageKey(userId)) || 0);
+        } catch (_) {
+          return 0;
+        }
+      }
+
+      function writeSortUsage(userId, value) {
+        try {
+          localStorage.setItem(usageKey(userId), String(value));
+        } catch (_) {}
+      }
+
+      async function loadPlan(session) {
+        state.isPro = false;
+        state.planExpiresAt = null;
+        state.sortsUsed = 0;
+        const user = session?.user;
+        if (!SB || !user) {
+          render();
+          return;
+        }
+        const { data, error } = await SB
+          .from('billing_entitlements')
+          .select('status, expires_at')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (!error && data) {
+          const active = data.status === 'active' || data.status === 'grace_period';
+          const notExpired = !data.expires_at || new Date(data.expires_at) > new Date();
+          state.isPro = active && notExpired;
+          state.planExpiresAt = data.expires_at || null;
+        }
+        state.sortsUsed = readSortUsage(user.id);
+        render();
+      }
+
+      function applyLock() {
+        overlay.classList.toggle('hidden', authed);
+        shellEl.classList.toggle('locked', !authed);
+        accountBtn.classList.toggle('hidden', !authed || !SB);
+        if (!authed) accountOverlay.classList.add('hidden');
+      }
+
+      if (SB) {
+        SB.auth.onAuthStateChange((_e, session) => {
+          authed = !!session;
+          applyLock();
+          loadPlan(session);
+        });
+        SB.auth.getSession().then(({ data }) => {
+          authed = !!data.session;
+          applyLock();
+          loadPlan(data.session);
+        });
+
+        const emailEl = $('login-email');
+        const passEl = $('login-pass');
+        const errEl = $('login-error');
+        const btnEl = $('login-btn');
+        const switchEl = $('login-switch');
+        let mode = 'signin';
+
+        const setMode = (m) => {
+          mode = m;
+          const id = state.lang === 'id';
+          $('login-title').textContent = m === 'signin'
+            ? (id ? 'Masuk ke Shortir File' : 'Sign in to Shortir File')
+            : (id ? 'Buat akun baru' : 'Create a new account');
+          $('login-sub').textContent = m === 'signin'
+            ? (id ? 'Masuk untuk membuka aplikasi web.' : 'Sign in to open the web app.')
+            : (id ? 'Daftar untuk membuka aplikasi web.' : 'Sign up to open the web app.');
+          switchEl.textContent = m === 'signin'
+            ? (id ? 'Buat akun baru' : 'Create account')
+            : (id ? 'Sudah punya akun? Masuk' : 'Already have an account? Sign in');
+          btnEl.textContent = m === 'signin'
+            ? (id ? 'Masuk' : 'Sign in')
+            : (id ? 'Daftar' : 'Sign up');
+        };
+
+        switchEl.onclick = () => setMode(mode === 'signin' ? 'signup' : 'signin');
+
+        const submit = async () => {
+          errEl.textContent = '';
+          const email = emailEl.value.trim();
+          const pass = passEl.value;
+          if (!email || !pass) {
+            errEl.textContent = state.lang === 'id' ? 'Isi email dan kata sandi.' : 'Fill email and password.';
+            return;
+          }
+          btnEl.disabled = true;
+          try {
+            if (mode === 'signin') {
+              const { error } = await SB.auth.signInWithPassword({ email, password: pass });
+              if (error) errEl.textContent = error.message;
+              return;
+            }
+            const { data, error } = await SB.auth.signUp({ email, password: pass });
+            if (error) {
+              errEl.textContent = error.message;
+              return;
+            }
+            if (data?.session) {
+              errEl.textContent = '';
+              return;
+            }
+            setMode('signin');
+            errEl.textContent = state.lang === 'id'
+              ? 'Akun dibuat. Cek email untuk konfirmasi, lalu masuk.'
+              : 'Account created. Check your email to confirm, then sign in.';
+          } finally {
+            btnEl.disabled = false;
+          }
+        };
+
+        btnEl.onclick = submit;
+        passEl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') submit();
+        });
+
+        const aEmail = $('account-email');
+        const aErr = $('account-error');
+
+        const refreshAccount = async () => {
+          const { data } = await SB.auth.getUser();
+          aEmail.textContent = data.user?.email ?? '';
+          $('account-plan').textContent = state.isPro ? '✦ Pro' : 'Free';
+          $('account-plan').title = state.isPro && state.planExpiresAt
+            ? 'Pro aktif sampai ' + new Date(state.planExpiresAt).toLocaleString()
+            : '';
+          $('account-upgrade').hidden = state.isPro;
+          aErr.textContent = '';
+          aErr.classList.remove('ok');
+        };
+
+        accountBtn.onclick = async () => {
+          await refreshAccount();
+          accountOverlay.classList.remove('hidden');
+        };
+        $('account-cancel').onclick = () => accountOverlay.classList.add('hidden');
+        $('account-logout').onclick = async () => {
+          await SB.auth.signOut();
+          accountOverlay.classList.add('hidden');
+        };
+        $('account-upgrade').onclick = upgradeToPro;
+        $('account-reset').onclick = async () => {
+          aErr.classList.remove('ok');
+          const { data } = await SB.auth.getUser();
+          const email = data.user?.email;
+          if (!email) {
+            aErr.textContent = state.lang === 'id' ? 'Email akun tidak ditemukan.' : 'Account email was not found.';
+            return;
+          }
+          const { error } = await SB.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.href.split('#')[0],
+          });
+          if (error) {
+            aErr.textContent = error.message;
+            return;
+          }
+          aErr.classList.add('ok');
+          aErr.textContent = state.lang === 'id'
+            ? 'Tautan reset password dikirim ke email Anda.'
+            : 'A password reset link was sent to your email.';
+        };
+      }
+      applyLock();
+
+      if (!supportsFS()) {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        $('unsupported-text').innerHTML = isIOS
+          ? (state.lang === 'id'
+              ? 'iOS tidak mendukung akses folder lokal di browser. Gunakan <b>Mac/PC</b> dengan <b>Chrome</b> atau <b>Edge</b>, atau aplikasi native.'
+              : 'iOS does not support local folder access in browsers. Use <b>Mac/PC</b> with <b>Chrome</b> or <b>Edge</b>, or the native app.')
+          : (state.lang === 'id'
+              ? 'Browser ini belum mendukung File System Access API. Gunakan <b>Chrome</b> atau <b>Edge</b> versi desktop.'
+              : 'This browser does not support the File System Access API. Use <b>Chrome</b> or <b>Edge</b> desktop.');
+        $('unsupported').classList.remove('hidden');
+        ['btn-action', 'btn-undo', 'btn-undoall', 'btn-redo', 'btn-redoall'].forEach((id) => {
+          $(id).disabled = true;
+        });
+      }
+      applySkin();
+      render();
+    </script>
+  </body>
+</html>

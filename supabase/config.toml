@@ -1,2 +1,11 @@
+[functions.create-midtrans-qris]
+verify_jwt = false
+
+[functions.submit-gallery]
+verify_jwt = false
+
 [functions.xendit-webhook]
+verify_jwt = false
+
+[functions.midtrans-webhook]
 verify_jwt = false

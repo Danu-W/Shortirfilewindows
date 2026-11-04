@@ -1,0 +1,792 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Galeri foto dari folder Google Drive publik." />
+    <title>Galeri foto — Shortir File</title>
+    <link rel="icon" type="image/png" sizes="256x256" href="assets/shortir_file_icon.png" />
+    <link rel="apple-touch-icon" href="assets/shortir_file_icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="site-header" id="top">
+      <a class="brand" href="index.html" aria-label="Shortir File home">
+        <img src="assets/shortir_file_icon.png" alt="" />
+        <span>shortir<span class="brand-mark">.</span></span>
+      </a>
+        <div class="account-control" id="account-control">
+        <button class="button button-small button-dark" id="account-login" type="button">Masuk <span>↗</span></button>
+        <button class="account-avatar" id="account-avatar" type="button" aria-label="Menu akun" aria-expanded="false" hidden>
+          <span id="account-avatar-letter"></span>
+        </button>
+        <div class="account-popover" id="account-popover" hidden>
+          <span class="account-email" id="account-email"></span>
+          <button class="account-link" id="account-signout" type="button">Keluar</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="gallery-hero">
+        <div class="section-shell">
+          <div class="gallery-hero-inner">
+            <div class="eyebrow"><span class="eyebrow-dot"></span> Galeri foto</div>
+            <h1>Bagikan folder.<br /><em>Tampilkan kenangan.</em></h1>
+            <p>Galeri dibuat lewat form — pilih folder Google Drive, beri nama, atur PIN & kuota.</p>
+            <div class="gallery-hero-actions">
+              <button class="button button-accent open-create-modal" type="button">Buat galeri <span>↗</span></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="gallery-section section-shell">
+        <div class="gallery-mode-head">
+          <button class="button button-small button-dark open-create-modal" type="button">Buat galeri baru <span>+</span></button>
+        </div>
+
+        <div class="gallery-created" id="gallery-created" hidden>
+          <span class="gallery-created-icon">✓</span>
+          <div class="gallery-created-body">
+            <strong>Galeri berhasil dibuat</strong>
+            <p id="gallery-created-text"></p>
+          </div>
+          <button class="gallery-created-close" id="gallery-created-close" type="button" aria-label="Tutup">&times;</button>
+        </div>
+
+        <div class="gallery-tools">
+          <p class="gallery-note" id="gallery-note">Klik nama client di Galeriku untuk membuka galeri.</p>
+          <button class="key-link" id="key-toggle" type="button">Setel API key</button>
+        </div>
+
+        <div class="mygalleries" id="my-galleries" hidden>
+          <div class="mygalleries-head">
+            <h3>Galeriku</h3>
+            <span class="gallery-note" id="my-galleries-count"></span>
+          </div>
+          <div class="mygalleries-list" id="my-galleries-list"></div>
+        </div>
+
+        <div class="create-modal gallery-modal" id="gallery-modal" hidden>
+          <div class="create-modal-panel gallery-modal-panel">
+            <div class="key-modal-head">
+              <div>
+                <span class="section-kicker">GALERI</span>
+                <h3 id="gallery-modal-title">Galeri</h3>
+              </div>
+              <button class="key-close" id="gallery-modal-close" type="button" aria-label="Tutup">&times;</button>
+            </div>
+
+            <div class="select-toolbar" id="select-toolbar" hidden>
+              <span id="select-count">0 foto dipilih</span>
+              <div class="select-actions">
+                <button class="button button-small button-accent" id="select-download" type="button">Download <span>↓</span></button>
+                <button class="button button-small button-dark" id="select-clear" type="button">Batal</button>
+              </div>
+            </div>
+
+            <div class="select-panel" id="select-panel" hidden>
+              <div class="select-panel-head">
+                <span id="select-panel-count"></span>
+                <button class="key-link" id="select-panel-clear" type="button">Bersihkan</button>
+              </div>
+              <div class="select-panel-grid" id="select-panel-grid"></div>
+            </div>
+
+            <div class="gallery-frame-wrap" id="gallery-frame-wrap" hidden>
+              <div class="gallery-grid" id="gallery-grid"></div>
+              <div class="drive-embed" id="drive-embed" hidden></div>
+              <button class="button button-dark load-more" id="load-more" type="button" hidden>Muat lebih banyak <span>↓</span></button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer section-shell">
+      <div class="footer-brand">
+        <a class="brand" href="index.html"><img src="assets/shortir_file_icon.png" alt="" /><span>shortir<span class="brand-mark">.</span></span></a>
+        <p>Less clutter. More room.</p>
+      </div>
+      <div class="footer-links">
+        <a href="index.html#fitur">Fitur</a>
+        <a href="index.html#harga">Harga</a>
+        <a href="index.html#privasi">Privasi</a>
+        <a href="mailto:storytiespict@gmail.com">storytiespict@gmail.com</a>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span id="year"></span> Shortir File</span>
+        <span>Made for calmer workspaces.</span>
+      </div>
+    </footer>
+
+    <div class="key-modal" id="key-modal" hidden>
+      <div class="key-modal-panel">
+        <div class="key-modal-head">
+          <h3>API key Google Drive</h3>
+          <button class="key-close" id="key-close" type="button" aria-label="Tutup">&times;</button>
+        </div>
+        <ol>
+          <li>Buka <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console → Credentials</a>, buat project baru.</li>
+          <li>Di <em>Libraries</em>, aktifkan <strong>Google Drive API</strong>.</li>
+          <li>Buat <strong>API key</strong>, lalu batasi ke <em>HTTP referrers</em> domain websitemu.</li>
+          <li>Tempel key-nya di bawah.</li>
+        </ol>
+        <input id="drive-api-key" type="text" placeholder="AIzaSy..." aria-label="API key Google Drive" autocomplete="off" />
+        <button class="button button-dark" id="key-save" type="button">Simpan</button>
+        <p class="key-note" id="key-note"></p>
+      </div>
+    </div>
+
+    <div class="pin-gate" id="pin-gate" hidden>
+      <div class="pin-gate-panel">
+        <h3>Galeri terkunci</h3>
+        <p>Masukkan PIN untuk melihat foto galeri ini.</p>
+        <input id="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="PIN 4–6 digit" aria-label="PIN galeri" autocomplete="off" />
+        <button class="button button-dark" id="pin-submit" type="button">Buka galeri</button>
+        <p class="key-note" id="pin-note"></p>
+      </div>
+    </div>
+
+    <div class="lightbox" id="lightbox" hidden>
+      <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Tutup">&times;</button>
+      <button class="lightbox-nav lightbox-prev" id="lightbox-prev" type="button" aria-label="Sebelumnya">‹</button>
+      <figure class="lightbox-figure">
+        <img id="lightbox-img" src="" alt="" />
+        <figcaption id="lightbox-caption"></figcaption>
+        <button class="lightbox-fav" id="lightbox-fav" type="button">♡ Pilih foto</button>
+      </figure>
+      <button class="lightbox-nav lightbox-next" id="lightbox-next" type="button" aria-label="Berikutnya">›</button>
+    </div>
+
+    <div class="create-modal" id="edit-modal" hidden>
+      <div class="create-modal-panel">
+        <div class="key-modal-head">
+          <div>
+            <span class="section-kicker">EDIT INFO</span>
+            <h3>Edit info client</h3>
+          </div>
+          <button class="key-close" id="edit-modal-close" type="button" aria-label="Tutup">&times;</button>
+        </div>
+        <form id="edit-form">
+          <div class="create-field">
+            <label for="edit-name">Nama galeri / klien</label>
+            <input id="edit-name" type="text" required />
+          </div>
+          <div class="create-field">
+            <label for="edit-time">Jam sesi <small>(opsional)</small></label>
+            <input id="edit-time" type="time" />
+          </div>
+          <p class="create-error" id="edit-error" hidden></p>
+          <button class="button button-accent create-submit" id="edit-submit" type="submit">Simpan <span>↗</span></button>
+        </form>
+      </div>
+    </div>
+
+    <div class="create-modal" id="submissions-modal" hidden>
+      <div class="create-modal-panel">
+        <div class="key-modal-head">
+          <div>
+            <span class="section-kicker">KIRIMAN KLIEN</span>
+            <h3 id="submissions-title">Foto terpilih</h3>
+          </div>
+          <button class="key-close" id="submissions-close" type="button" aria-label="Tutup">&times;</button>
+        </div>
+        <div id="submissions-list" style="display:grid;gap:14px"></div>
+      </div>
+    </div>
+
+    <div class="create-modal" id="login-modal" hidden>
+      <div class="create-modal-panel">
+        <div class="key-modal-head">
+          <div>
+            <span class="section-kicker">AKUN</span>
+            <h3 id="login-title">Masuk</h3>
+          </div>
+          <button class="key-close" id="login-modal-close" type="button" aria-label="Tutup">&times;</button>
+        </div>
+        <div class="login-tabs">
+          <button class="login-tab is-active" id="login-tab-login" type="button">Masuk</button>
+          <button class="login-tab" id="login-tab-register" type="button">Daftar</button>
+        </div>
+        <form id="login-form">
+          <div class="create-field">
+            <label for="login-email">Email</label>
+            <input id="login-email" type="email" placeholder="nama@email.com" autocomplete="email" required />
+          </div>
+          <div class="create-field">
+            <label for="login-password">Kata sandi</label>
+            <input id="login-password" type="password" placeholder="Minimal 6 karakter" autocomplete="current-password" required />
+          </div>
+          <p class="create-error" id="login-error" hidden></p>
+          <button class="button button-accent create-submit" id="login-submit" type="submit">Masuk <span>↗</span></button>
+        </form>
+      </div>
+    </div>
+
+    <div class="create-modal" id="create-modal" hidden>
+      <div class="create-modal-panel">
+        <div class="key-modal-head">
+          <div>
+            <span class="section-kicker">GALERI BARU</span>
+            <h3>Buat galeri</h3>
+          </div>
+          <button class="key-close" id="create-modal-close" type="button" aria-label="Tutup">&times;</button>
+        </div>
+        <form id="create-gallery-form">
+          <div class="create-field">
+            <label for="create-name">Nama galeri / klien</label>
+            <input id="create-name" type="text" placeholder="Mis. Sesi Wisuda Rara" required />
+          </div>
+          <div class="create-field">
+            <label for="create-url">Tautan folder Google Drive</label>
+            <input id="create-url" type="url" placeholder="https://drive.google.com/drive/folders/..." required />
+          </div>
+          <div class="create-field-row">
+            <div class="create-field">
+              <label for="create-pin">PIN <small>(opsional)</small></label>
+              <input id="create-pin" type="password" inputmode="numeric" maxlength="6" placeholder="4–6 digit" />
+            </div>
+            <div class="create-field">
+              <label for="create-max">Kuota <small>(opsional)</small></label>
+              <input id="create-max" type="number" min="1" step="1" placeholder="Mis. 30" />
+            </div>
+          </div>
+          <div class="create-field">
+            <label for="create-until">Kedaluwarsa <small>(opsional)</small></label>
+            <input id="create-until" type="date" />
+          </div>
+          <p class="create-error" id="create-error" hidden></p>
+          <p class="gallery-note" id="create-account-note">Wajib login untuk membuat galeri. Klik “Masuk” di pojok kanan atas.</p>
+          <button class="button button-accent create-submit" type="submit">Buat galeri <span>↗</span></button>
+        </form>
+      </div>
+    </div>
+
+    <script>window.__shortirDeferLoad = true;</script>
+    <script src="vendor/supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+    <script>
+      (() => {
+        const modal = document.querySelector('#create-modal');
+        const openButtons = document.querySelectorAll('.open-create-modal');
+        const closeBtn = document.querySelector('#create-modal-close');
+        const form = document.querySelector('#create-gallery-form');
+        const errorEl = document.querySelector('#create-error');
+        const nameInput = document.querySelector('#create-name');
+        const urlInput = document.querySelector('#create-url');
+        const pinInput = document.querySelector('#create-pin');
+        const maxInput = document.querySelector('#create-max');
+        const untilInput = document.querySelector('#create-until');
+        const noteEl = document.querySelector('#create-account-note');
+
+        let pendingCreate = false;
+        function openModal() {
+          if (!session) {
+            pendingCreate = true;
+            openLoginModal();
+            return;
+          }
+          pendingCreate = false;
+          modal.hidden = false;
+          document.body.style.overflow = 'hidden';
+          nameInput.focus();
+        }
+        function closeModal() {
+          modal.hidden = true;
+          document.body.style.overflow = '';
+        }
+
+        openButtons.forEach((btn) => btn?.addEventListener('click', openModal));
+        closeBtn?.addEventListener('click', closeModal);
+        modal?.addEventListener('click', (event) => {
+          if (event.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && !modal.hidden) closeModal();
+        });
+
+        if (new URLSearchParams(window.location.search).get('create') === '1') {
+          openModal();
+        }
+
+        const qp = new URLSearchParams(window.location.search);
+        const createdBanner = document.querySelector('#gallery-created');
+        const createdText = document.querySelector('#gallery-created-text');
+        const createdClose = document.querySelector('#gallery-created-close');
+
+        if (qp.get('created') === '1' && createdBanner) {
+          const parts = [];
+          if (qp.get('name')) parts.push(`“${qp.get('name')}”`);
+          if (qp.get('pin')) parts.push(`PIN: ${qp.get('pin')}`);
+          if (qp.get('max')) parts.push(`kuota ${qp.get('max')} pilihan`);
+          if (qp.get('until')) parts.push(`kedaluwarsa ${qp.get('until')}`);
+          const namePart = qp.get('name') ? `“${qp.get('name')}” ` : '';
+          createdText.textContent = parts.length
+            ? `Galeri ${namePart}— ${parts.join(' · ')} — siap dibagikan.`
+            : 'Galeri siap dibagikan.';
+          createdBanner.hidden = false;
+          createdClose?.addEventListener('click', () => { createdBanner.hidden = true; });
+          setTimeout(() => { createdBanner.hidden = true; }, 8000);
+          qp.delete('created');
+          history.replaceState(null, '', window.location.pathname + (qp.toString() ? `?${qp.toString()}` : ''));
+        }
+
+        function getDriveFolderId(value) {
+          try {
+            const url = new URL(value);
+            const match = url.pathname.match(/\/folders\/([^/]+)/);
+            return match ? match[1] : url.searchParams.get('id');
+          } catch (_) {
+            return null;
+          }
+        }
+
+        let sb = null;
+        let session = null;
+        const accountLogin = document.querySelector('#account-login');
+        const accountAvatar = document.querySelector('#account-avatar');
+        const accountPopover = document.querySelector('#account-popover');
+        const accountEmail = document.querySelector('#account-email');
+        const accountLetter = document.querySelector('#account-avatar-letter');
+        const accountSignout = document.querySelector('#account-signout');
+
+        const loginModal = document.querySelector('#login-modal');
+        const loginClose = document.querySelector('#login-modal-close');
+        const loginForm = document.querySelector('#login-form');
+        const loginEmail = document.querySelector('#login-email');
+        const loginPassword = document.querySelector('#login-password');
+        const loginError = document.querySelector('#login-error');
+        const loginSubmit = document.querySelector('#login-submit');
+        const loginTitle = document.querySelector('#login-title');
+        const tabLoginBtn = document.querySelector('#login-tab-login');
+        const tabRegisterBtn = document.querySelector('#login-tab-register');
+
+        const myGalleries = document.querySelector('#my-galleries');
+        const myGalleriesList = document.querySelector('#my-galleries-list');
+        const myGalleriesCount = document.querySelector('#my-galleries-count');
+
+        let loginMode = 'login';
+
+        function openLoginModal() {
+          loginError.hidden = true;
+          loginModal.hidden = false;
+          document.body.style.overflow = 'hidden';
+          loginEmail.focus();
+        }
+        function closeLoginModal() {
+          loginModal.hidden = true;
+          document.body.style.overflow = '';
+        }
+        function setLoginMode(mode) {
+          loginMode = mode;
+          tabLoginBtn.classList.toggle('is-active', mode === 'login');
+          tabRegisterBtn.classList.toggle('is-active', mode === 'register');
+          loginTitle.textContent = mode === 'login' ? 'Masuk' : 'Daftar';
+          loginSubmit.innerHTML = mode === 'login'
+            ? 'Masuk <span>↗</span>'
+            : 'Daftar <span>↗</span>';
+          loginPassword.autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+          loginError.hidden = true;
+        }
+
+        accountLogin?.addEventListener('click', openLoginModal);
+        loginClose?.addEventListener('click', closeLoginModal);
+        loginModal?.addEventListener('click', (event) => {
+          if (event.target === loginModal) closeLoginModal();
+        });
+        tabLoginBtn?.addEventListener('click', () => setLoginMode('login'));
+        tabRegisterBtn?.addEventListener('click', () => setLoginMode('register'));
+
+        loginForm?.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          loginError.hidden = true;
+          loginSubmit.disabled = true;
+          const email = loginEmail.value.trim();
+          const password = loginPassword.value;
+          try {
+            if (loginMode === 'login') {
+              const { error } = await sb.auth.signInWithPassword({ email, password });
+              if (error) throw error;
+            } else {
+              const { error } = await sb.auth.signUp({ email, password });
+              if (error) throw error;
+              loginError.textContent = 'Akun dibuat. Silakan masuk dengan email & password yang sama.';
+              loginError.classList.add('ok');
+              loginError.hidden = false;
+              setLoginMode('login');
+              return;
+            }
+            const { data } = await sb.auth.getSession();
+            session = data.session;
+            closeLoginModal();
+            renderAccount();
+            await loadMyGalleries();
+            if (session) noteEl.textContent = `Masuk sebagai ${session.user.email || ''} — galeri tersimpan di akunmu.`;
+            if (pendingCreate) openModal();
+          } catch (err) {
+            loginError.classList.remove('ok');
+            loginError.textContent = err.message || 'Terjadi kesalahan.';
+            loginError.hidden = false;
+          } finally {
+            loginSubmit.disabled = false;
+          }
+        });
+
+        function galleryLink(g, client = false) {
+          const qs = new URLSearchParams();
+          qs.set('url', `https://drive.google.com/drive/folders/${g.drive_folder_id}`);
+          qs.set('name', g.name);
+          if (g.id) qs.set('gal', g.id);
+          if (g.session_time) qs.set('jam', g.session_time);
+          if (g.pin) qs.set('pin', g.pin);
+          if (g.max_selections) qs.set('max', String(g.max_selections));
+          if (g.expires_at) qs.set('until', g.expires_at.slice(0, 10));
+          return `${client ? 'galeriklien.html' : 'galeri.html'}?${qs.toString()}`;
+        }
+
+        function copyLink(text) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).catch(() => {});
+          } else {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+          }
+        }
+
+        const galleryModal = document.querySelector('#gallery-modal');
+        const galleryModalClose = document.querySelector('#gallery-modal-close');
+        galleryModalClose?.addEventListener('click', () => {
+          galleryModal.hidden = true;
+          document.body.style.overflow = '';
+        });
+        galleryModal?.addEventListener('click', (event) => {
+          if (event.target === galleryModal) {
+            galleryModal.hidden = true;
+            document.body.style.overflow = '';
+          }
+        });
+
+        const subsModal = document.querySelector('#submissions-modal');
+        const subsClose = document.querySelector('#submissions-close');
+        const subsTitle = document.querySelector('#submissions-title');
+        const subsList = document.querySelector('#submissions-list');
+
+        async function openSubmissions(g) {
+          subsTitle.textContent = `Kiriman — ${g.name}`;
+          subsList.innerHTML = '<p class="gallery-note">Memuat kiriman…</p>';
+          subsModal.hidden = false;
+          document.body.style.overflow = 'hidden';
+          if (!sb || !session) return;
+          const { data, error } = await sb
+            .from('gallery_submissions')
+            .select('*')
+            .eq('gallery_id', g.id)
+            .order('created_at', { ascending: false });
+          if (error) {
+            subsList.innerHTML = `<p class="gallery-note">Gagal memuat: ${error.message}</p>`;
+            return;
+          }
+          if (!data.length) {
+            subsList.innerHTML = '<p class="gallery-note">Belum ada kiriman dari klien.</p>';
+            return;
+          }
+          subsList.innerHTML = '';
+          data.forEach((s) => {
+            const block = document.createElement('div');
+            block.className = 'submission-block';
+            const head = document.createElement('div');
+            head.className = 'submission-head';
+            const when = new Date(s.created_at).toLocaleString('id-ID');
+            const files = Array.isArray(s.files) ? s.files : [];
+            head.innerHTML = `<span>${when}</span><strong>${files.length} foto</strong>`;
+            const list = document.createElement('div');
+            list.className = 'submission-files';
+            files.forEach((f) => {
+              const item = document.createElement('span');
+              item.className = 'submission-file';
+              item.textContent = f.name || f.id || 'Foto';
+              list.appendChild(item);
+            });
+            block.append(head, list);
+            subsList.appendChild(block);
+          });
+        }
+
+        subsClose?.addEventListener('click', () => {
+          subsModal.hidden = true;
+          document.body.style.overflow = '';
+        });
+        subsModal?.addEventListener('click', (event) => {
+          if (event.target === subsModal) {
+            subsModal.hidden = true;
+            document.body.style.overflow = '';
+          }
+        });
+
+        const editModal = document.querySelector('#edit-modal');
+        const editClose = document.querySelector('#edit-modal-close');
+        const editForm = document.querySelector('#edit-form');
+        const editName = document.querySelector('#edit-name');
+        const editTime = document.querySelector('#edit-time');
+        const editError = document.querySelector('#edit-error');
+        let editingGallery = null;
+
+        function openEditModal(g) {
+          editingGallery = g;
+          editName.value = g.name || '';
+          editTime.value = g.session_time || '';
+          editError.hidden = true;
+          editModal.hidden = false;
+          document.body.style.overflow = 'hidden';
+          editName.focus();
+        }
+        function closeEditModal() {
+          editModal.hidden = true;
+          document.body.style.overflow = '';
+          editingGallery = null;
+        }
+        editClose?.addEventListener('click', closeEditModal);
+        editModal?.addEventListener('click', (event) => {
+          if (event.target === editModal) closeEditModal();
+        });
+
+        editForm?.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          if (!sb || !session || !editingGallery) return;
+          editError.hidden = true;
+          const name = editName.value.trim();
+          const jam = editTime.value || null;
+          if (!name) {
+            editError.textContent = 'Nama tidak boleh kosong.';
+            editError.hidden = false;
+            return;
+          }
+          const { error } = await sb
+            .from('galleries')
+            .update({ name, session_time: jam })
+            .eq('id', editingGallery.id);
+          if (error) {
+            editError.textContent = `Gagal menyimpan: ${error.message}`;
+            editError.hidden = false;
+            return;
+          }
+          closeEditModal();
+          await loadMyGalleries();
+        });
+
+        async function loadMyGalleries() {
+          if (!session || !sb) {
+            myGalleries.hidden = true;
+            return;
+          }
+          const { data, error } = await sb
+            .from('galleries')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (error) {
+            myGalleries.hidden = true;
+            return;
+          }
+          if (!data.length) {
+            myGalleries.hidden = true;
+            return;
+          }
+          myGalleries.hidden = false;
+          myGalleriesCount.textContent = `${data.length} galeri`;
+          myGalleriesList.innerHTML = '';
+          data.forEach((g) => {
+            const expired = g.expires_at && new Date(`${g.expires_at.slice(0, 10)}T23:59:59`) < new Date();
+            const card = document.createElement('div');
+            card.className = 'mygal-card' + (expired ? ' is-expired' : '');
+
+            const top = document.createElement('div');
+            top.className = 'mygal-top';
+            const nameWrap = document.createElement('div');
+            nameWrap.className = 'mygal-namewrap';
+            const name = document.createElement('button');
+            name.type = 'button';
+            name.className = 'mygal-name';
+            name.textContent = g.name;
+            name.title = 'Klik untuk membuka galeri';
+            name.addEventListener('click', () => {
+              document.querySelector('#gallery-modal-title').textContent = g.name;
+              document.querySelector('#gallery-modal').hidden = false;
+              document.body.style.overflow = 'hidden';
+              window.shortirOpenByFolder?.(`https://drive.google.com/drive/folders/${g.drive_folder_id}`);
+            });
+            nameWrap.appendChild(name);
+            if (expired) {
+              const badge = document.createElement('span');
+              badge.className = 'mygal-badge';
+              badge.textContent = 'Berakhir';
+              nameWrap.appendChild(badge);
+            }
+            const openBtn = document.createElement('a');
+            openBtn.className = 'mygal-arrow';
+            openBtn.href = galleryLink(g);
+            openBtn.title = 'Buka galeri';
+            openBtn.textContent = '→';
+            top.append(nameWrap, openBtn);
+
+            const meta = document.createElement('div');
+            meta.className = 'mygal-meta';
+            const metaParts = [];
+            if (g.session_time) metaParts.push(`Jam ${g.session_time}`);
+            if (g.pin) metaParts.push(`PIN ${g.pin}`);
+            if (g.max_selections) metaParts.push(`Maks ${g.max_selections} pilihan`);
+            if (g.expires_at) metaParts.push(`Berakhir ${g.expires_at.slice(0, 10)}`);
+            meta.textContent = metaParts.join('  ·  ') || 'Galeri publik';
+            if (expired) meta.textContent += ' — akses klien ditutup (hapus otomatis 3 hari setelah berakhir)';
+
+            const actions = document.createElement('div');
+            actions.className = 'mygal-actions';
+            const shareBtn = document.createElement('button');
+            shareBtn.type = 'button';
+            shareBtn.className = 'mygal-btn mygal-btn-share';
+            shareBtn.textContent = 'Salin tautan klien';
+            shareBtn.addEventListener('click', () => {
+              copyLink(`${window.location.origin}/${galleryLink(g, true)}`);
+              shareBtn.textContent = 'Tersalin!';
+              setTimeout(() => { shareBtn.textContent = 'Salin tautan klien'; }, 2000);
+            });
+            const subsBtn = document.createElement('button');
+            subsBtn.type = 'button';
+            subsBtn.className = 'mygal-btn';
+            subsBtn.textContent = 'Kiriman';
+            subsBtn.addEventListener('click', () => openSubmissions(g));
+            const editBtn = document.createElement('button');
+            editBtn.type = 'button';
+            editBtn.className = 'mygal-btn';
+            editBtn.textContent = 'Edit';
+            editBtn.addEventListener('click', () => openEditModal(g));
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'mygal-btn mygal-btn-delete';
+            deleteBtn.textContent = 'Hapus';
+            deleteBtn.addEventListener('click', async () => {
+              if (!window.confirm(`Hapus galeri “${g.name}” dan semua kiriman kliennya?`)) return;
+              const { error } = await sb.from('galleries').delete().eq('id', g.id);
+              if (!error) await loadMyGalleries();
+            });
+            actions.append(shareBtn, subsBtn, editBtn, deleteBtn);
+
+            card.append(top, meta, actions);
+            myGalleriesList.appendChild(card);
+          });
+        }
+
+        function renderAccount() {
+          if (!session) {
+            accountLogin.hidden = false;
+            accountAvatar.hidden = true;
+            myGalleries.hidden = true;
+            return;
+          }
+          accountLogin.hidden = true;
+          accountAvatar.hidden = false;
+          const email = session.user.email || '';
+          accountEmail.textContent = email;
+          accountLetter.textContent = (email[0] || '?').toUpperCase();
+        }
+
+        accountAvatar?.addEventListener('click', () => {
+          const isOpen = accountAvatar.getAttribute('aria-expanded') === 'true';
+          accountAvatar.setAttribute('aria-expanded', String(!isOpen));
+          accountPopover.hidden = isOpen;
+        });
+        document.addEventListener('click', (event) => {
+          if (!accountAvatar || accountPopover.hidden) return;
+          if (!event.target.closest('.account-control')) {
+            accountAvatar.setAttribute('aria-expanded', 'false');
+            accountPopover.hidden = true;
+          }
+        });
+        accountSignout?.addEventListener('click', async () => {
+          if (sb) await sb.auth.signOut();
+          session = null;
+          renderAccount();
+          await loadMyGalleries();
+          noteEl.textContent = 'Wajib login untuk membuat galeri. Klik “Masuk” di pojok kanan atas.';
+          accountPopover.hidden = true;
+        });
+
+        if (window.supabase) {
+          sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+          sb.auth.getSession().then(async ({ data }) => {
+            session = data.session;
+            renderAccount();
+            await loadMyGalleries();
+            if (session) noteEl.textContent = `Masuk sebagai ${session.user.email || ''} — galeri tersimpan di akunmu.`;
+          });
+        }
+
+        form?.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const folderId = getDriveFolderId(urlInput.value.trim());
+          if (!folderId) {
+            errorEl.textContent = 'Tautan folder Google Drive tidak valid.';
+            errorEl.hidden = false;
+            return;
+          }
+          const pin = pinInput.value.trim();
+          if (pin && !/^\d{4,6}$/.test(pin)) {
+            errorEl.textContent = 'PIN harus 4–6 digit angka.';
+            errorEl.hidden = false;
+            return;
+          }
+          const max = Number(maxInput.value);
+          if (maxInput.value && (!Number.isInteger(max) || max < 1)) {
+            errorEl.textContent = 'Kuota harus angka bulat lebih dari 0.';
+            errorEl.hidden = false;
+            return;
+          }
+
+          let createdGalleryId = '';
+          if (sb && session) {
+            const { data: createdGallery, error } = await sb
+              .from('galleries')
+              .insert({
+                user_id: session.user.id,
+                name: nameInput.value.trim(),
+                drive_folder_id: folderId,
+                pin: pin || null,
+                max_selections: maxInput.value ? max : null,
+                expires_at: untilInput.value ? `${untilInput.value}T23:59:59Z` : null,
+              })
+              .select()
+              .single();
+            if (error) {
+              errorEl.textContent = `Gagal menyimpan galeri: ${error.message}`;
+              errorEl.hidden = false;
+              return;
+            }
+            createdGalleryId = createdGallery?.id || '';
+          }
+
+          const qs = new URLSearchParams();
+          qs.set('url', `https://drive.google.com/drive/folders/${folderId}`);
+          qs.set('name', nameInput.value.trim());
+          qs.set('created', '1');
+          if (createdGalleryId) qs.set('gal', createdGalleryId);
+          if (pin) qs.set('pin', pin);
+          if (maxInput.value) qs.set('max', String(max));
+          if (untilInput.value) qs.set('until', untilInput.value);
+
+          window.location.href = `galeri.html?${qs.toString()}`;
+        });
+      })();
+    </script>
+  </body>
+</html>

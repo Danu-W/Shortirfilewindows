@@ -1,0 +1,21 @@
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/auth.html
+  Cache-Control: no-store, must-revalidate
+/dashboard.html
+  Cache-Control: no-store, must-revalidate
+/buat-galeri.html
+  Cache-Control: no-store, must-revalidate
+/galeri.html
+  Cache-Control: no-store, must-revalidate
+/index.html
+  Cache-Control: no-store, must-revalidate
+/script.js
+  Cache-Control: no-store
+/supabase-config.js
+  Cache-Control: no-store
+/vendor/supabase.min.js
+  Cache-Control: no-store
+/studioin.css
+  Cache-Control: no-store

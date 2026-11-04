@@ -5,48 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Shortir File membantu merapikan foto dan dokumen langsung dari Mac, tanpa upload ke cloud." />
     <title>Shortir File — Bereskan file, beri ruang untuk ide.</title>
+    <link rel="icon" type="image/png" sizes="256x256" href="assets/shortir_file_icon.png" />
+    <link rel="apple-touch-icon" href="assets/shortir_file_icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
-    <header class="site-header">
+
+    <header class="site-header" id="top">
       <a class="brand" href="#top" aria-label="Shortir File home">
-        <img src="../assets/shortir_file_icon.png" alt="" />
+        <img src="assets/shortir_file_icon.png" alt="" />
         <span>shortir<span class="brand-mark">.</span></span>
       </a>
+
       <nav class="desktop-nav" aria-label="Main navigation">
         <a href="#cara-kerja">Cara kerja</a>
         <a href="#fitur">Fitur</a>
+        <a href="#harga">Harga</a>
         <a href="#privasi">Privasi</a>
+        <a href="shortir.html">Versi web</a>
       </nav>
-      <a class="button button-small button-dark nav-cta" href="../dist/Shortir-File-macOS.dmg">Download Mac <span>↗</span></a>
+
+      <div class="header-downloads">
+        <a class="button button-small button-dark" href="https://github.com/Danu-W/Shortirfilewindows/releases/latest/download/shortir-file-macos.zip" target="_blank" rel="noopener">Download Mac <span>↗</span></a>
+        <a class="button button-small button-accent" href="https://github.com/Danu-W/Shortirfilewindows/releases/latest/download/shortir-file-android.apk" target="_blank" rel="noopener">Download Android <span>↗</span></a>
+      </div>
+
       <button class="menu-toggle" type="button" aria-label="Buka menu" aria-expanded="false">Menu</button>
     </header>
 
-    <main id="top">
+    <main>
       <section class="hero section-shell">
         <div class="hero-copy reveal">
           <div class="eyebrow"><span class="eyebrow-dot"></span> File organizer untuk manusia nyata</div>
           <h1>Bereskan file.<br /><em>Beri ruang</em> untuk ide.</h1>
-          <p class="hero-text">Shortir File membantu kamu menyortir foto dan dokumen ke folder yang rapi—langsung di perangkat, tanpa ribet dan tanpa upload ke cloud.</p>
+          <p class="hero-text">Shortir File menyortir foto dan dokumen ke folder yang rapi—langsung di perangkat, tanpa ribet dan tanpa upload ke cloud.</p>
           <div class="hero-actions">
-            <a class="button button-coral" href="../dist/Shortir-File-macOS.dmg">Download untuk Mac <span>↓</span></a>
+            <a class="button button-accent" href="https://github.com/Danu-W/Shortirfilewindows/releases/latest/download/shortir-file-macos.zip" target="_blank" rel="noopener">Download untuk Mac <span>↓</span></a>
+            <a class="button button-dark" href="https://github.com/Danu-W/Shortirfilewindows/releases/latest/download/shortir-file-android.apk" target="_blank" rel="noopener">Download Android <span>↓</span></a>
             <a class="text-link" href="#cara-kerja">Lihat cara kerja <span>↘</span></a>
           </div>
-          <div class="hero-note"><span class="lock-icon">⌁</span> File tetap di perangkatmu <span class="note-divider"></span> macOS · Windows · iOS · Android</div>
+          <div class="hero-meta">
+            <span><b>macOS</b> · <b>Windows</b> · <b>iOS</b> · <b>Android</b></span>
+            <span class="meta-divider"></span>
+            <span class="meta-local">100% lokal di perangkatmu</span>
+          </div>
         </div>
 
         <div class="hero-visual reveal reveal-delay" aria-label="Preview Shortir File">
-          <div class="sun-shape"></div>
-          <div class="folder-tab">SHORTIR / WORKSPACE</div>
-          <div class="real-app-shot">
+          <div class="app-shot">
             <img src="assets/shortir-file-real.svg" alt="Tampilan aplikasi Shortir File di macOS" />
           </div>
           <div class="floating-card floating-count"><span class="check-badge">✓</span><div><strong>All tidy</strong><small>24 files moved</small></div></div>
-          <div class="floating-card floating-privacy"><span>⌂</span><strong>100% local</strong></div>
+          <div class="floating-card floating-privacy"><span class="lock-icon">⌁</span><strong>100% local</strong></div>
         </div>
       </section>
 
@@ -54,29 +68,205 @@
         <div class="ticker-track"><span>PHOTOS</span><b>✳</b><span>DOCUMENTS</span><b>✳</b><span>NO CLOUD UPLOADS</span><b>✳</b><span>LESS CLUTTER</span><b>✳</b><span>PHOTOS</span><b>✳</b><span>DOCUMENTS</span><b>✳</b></div>
       </section>
 
-      <section class="intro section-shell" id="cara-kerja">
+      <section class="steps-section section-shell" id="cara-kerja">
         <div class="section-kicker">01 / Bikin rapi, bukan rumit</div>
-        <div class="intro-grid">
+        <div class="steps-heading">
           <h2>Folder yang beres membuat kepala ikut <em>lega.</em></h2>
-          <div><p>Shortir File dibuat untuk momen ketika folder Downloads sudah terlalu ramai dan kamu hanya ingin kembali punya kendali.</p><a class="text-link" href="#fitur">Kenali fiturnya <span>↘</span></a></div>
+          <p>Shortir File dibuat untuk momen ketika folder Downloads sudah terlalu ramai dan kamu hanya ingin kembali punya kendali.</p>
+        </div>
+        <div class="steps-grid">
+          <article class="step-card reveal">
+            <span class="step-number">01</span>
+            <h3>Pilih folder</h3>
+            <p>Tentukan folder yang mau dirapikan—Downloads, Desktop, atau mana pun.</p>
+          </article>
+          <article class="step-card reveal reveal-delay">
+            <span class="step-number">02</span>
+            <h3>Atur aturannya</h3>
+            <p>Filter foto atau dokumen, lalu beri nama folder tujuannya.</p>
+          </article>
+          <article class="step-card reveal reveal-delay-2">
+            <span class="step-number">03</span>
+            <h3>Shortir selesaikan</h3>
+            <p>File berpindah dengan rapi. Kamu tinggal menikmati ruang yang lega.</p>
+          </article>
         </div>
       </section>
 
       <section class="feature-section section-shell" id="fitur">
-        <div class="feature-card feature-coral reveal"><div class="feature-number">01</div><div class="feature-icon">⌘</div><h3>Pilih.<br /><em>Selesai.</em></h3><p>Pilih folder, filter foto atau dokumen, beri nama folder tujuan—Shortir mengurus sisanya.</p><div class="feature-line"></div><span class="feature-caption">SORTING THAT FEELS LIGHT</span></div>
-        <div class="feature-card feature-ink reveal reveal-delay"><div class="feature-number">02</div><div class="feature-icon">◒</div><h3>Fokus pada<br /><em>yang penting.</em></h3><p>Cari file dengan cepat, lihat ukuran dan tipe, lalu pindahkan tanpa perlu membuka sepuluh aplikasi.</p><div class="feature-line"></div><span class="feature-caption">MADE FOR MOMENTUM</span></div>
-        <div class="feature-card feature-yellow reveal reveal-delay-2"><div class="feature-number">03</div><div class="feature-icon">⌂</div><h3>Privasi<br /><em>by default.</em></h3><p>File diproses langsung di perangkatmu. Tidak ada galeri yang diam-diam diunggah ke cloud.</p><div class="feature-line"></div><span class="feature-caption">YOUR FILES STAY YOURS</span></div>
+        <div class="section-kicker">02 / Fitur</div>
+        <div class="feature-list">
+          <a class="feature-row reveal" href="fitur-pilih.html">
+            <span class="feature-icon">⌘</span>
+            <div>
+              <h3>Pilih. Selesai.</h3>
+              <p>Pilih folder, filter foto atau dokumen, beri nama folder tujuan—Shortir mengurus sisanya.</p>
+            </div>
+            <span class="feature-arrow">→</span>
+          </a>
+          <a class="feature-row reveal reveal-delay" href="fitur-fokus.html">
+            <span class="feature-icon">◒</span>
+            <div>
+              <h3>Fokus pada yang penting.</h3>
+              <p>Cari file dengan cepat, lihat ukuran dan tipe, lalu pindahkan tanpa membuka sepuluh aplikasi.</p>
+            </div>
+            <span class="feature-arrow">→</span>
+          </a>
+          <a class="feature-row reveal reveal-delay-2" href="fitur-privasi.html">
+            <span class="feature-icon">⌂</span>
+            <div>
+              <h3>Privasi by default.</h3>
+              <p>File diproses langsung di perangkatmu. Tidak ada galeri yang diam-diam diunggah ke cloud.</p>
+            </div>
+            <span class="feature-arrow">→</span>
+          </a>
+        </div>
       </section>
 
       <section class="privacy-section section-shell" id="privasi">
-        <div class="privacy-copy"><div class="section-kicker">02 / Tenang, ini milikmu</div><h2>Rapi tanpa<br /><em>mengorbankan privasi.</em></h2><p>Shortir File bekerja dekat dengan file-mu. Kamu tahu apa yang dipilih, ke mana dipindah, dan kapan selesai.</p><a class="button button-dark" href="../dist/Shortir-File-macOS.dmg">Mulai merapikan <span>↗</span></a></div>
-        <div class="privacy-art"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="privacy-card"><span class="privacy-lock">⌂</span><span class="privacy-label">LOCAL FIRST</span><strong>Your files,<br /><em>your rules.</em></strong><small>Shortir File never uploads your personal files.</small></div><span class="art-star star-one">✦</span><span class="art-star star-two">✳</span></div>
+        <div class="privacy-copy reveal">
+          <div class="section-kicker">03 / Tenang, ini milikmu</div>
+          <h2>Rapi tanpa <br /><em>mengorbankan privasi.</em></h2>
+          <p>Shortir File bekerja dekat dengan file-mu. Kamu tahu apa yang dipilih, ke mana dipindah, dan kapan selesai.</p>
+          <a class="button button-dark" href="https://github.com/Danu-W/Shortirfilewindows/releases/latest/download/shortir-file-macos.zip" target="_blank" rel="noopener">Mulai merapikan <span>↗</span></a>
+        </div>
+        <div class="privacy-card reveal reveal-delay">
+          <span class="privacy-label">LOCAL FIRST</span>
+          <strong>Your files,<br /><em>your rules.</em></strong>
+          <small>Shortir File never uploads your personal files.</small>
+        </div>
       </section>
 
-      <section class="final-cta section-shell"><div class="cta-inner"><span class="eyebrow"><span class="eyebrow-dot"></span> Make space for what’s next</span><h2>Folder beres.<br /><em>Pikiran lapang.</em></h2><a class="button button-coral" href="../dist/Shortir-File-macOS.dmg">Download Shortir File <span>↓</span></a><p>Gratis untuk mulai. Tanpa drama.</p></div></section>
+      <section class="pricing-section section-shell" id="harga">
+        <div class="section-kicker">04 / Pilih ruangmu</div>
+        <div class="pricing-heading">
+          <h2>Mulai ringan.<br /><em>Upgrade saat siap.</em></h2>
+          <p>Semua file tetap diproses lokal. Pilih paket yang paling cocok untuk ritme kerjamu.</p>
+        </div>
+        <div class="pricing-grid">
+          <article class="price-card reveal">
+            <span class="price-label">FLEKSIBEL SETIAP BULAN</span>
+            <h3>Bulanan</h3>
+            <p class="price-description">Pilih kebebasan tanpa komitmen panjang.</p>
+            <div class="price-amount">Rp15.000 <small>/ bulan</small></div>
+            <ul>
+              <li>Sortir tanpa batas</li>
+              <li>Semua format foto dan dokumen</li>
+              <li>Copy dan move file</li>
+              <li>100% lokal di perangkat</li>
+            </ul>
+            <a class="button button-dark" href="https://github.com/Danu-W/Shortirfilewindows/releases/latest/download/shortir-file-macos.zip" target="_blank" rel="noopener">Pilih bulanan <span>↗</span></a>
+          </article>
+          <article class="price-card price-card-pro reveal reveal-delay">
+            <span class="price-badge">PALING HEMAT</span>
+            <span class="price-label">UNTUK SETAHUN PENUH</span>
+            <h3>Tahunan</h3>
+            <p class="price-description">Satu pembayaran, lebih tenang sepanjang tahun.</p>
+            <div class="price-amount">Rp150.000 <small>/ tahun</small></div>
+            <ul>
+              <li>Sortir tanpa batas</li>
+              <li>Semua format foto dan dokumen</li>
+              <li>Copy dan move file</li>
+              <li>100% lokal di perangkat</li>
+            </ul>
+            <a class="button button-accent" href="https://github.com/Danu-W/Shortirfilewindows/releases/latest/download/shortir-file-macos.zip" target="_blank" rel="noopener">Pilih tahunan <span>↗</span></a>
+          </article>
+        </div>
+        <p class="pricing-note">Harga dapat berubah mengikuti paket dan periode yang tersedia.</p>
+      </section>
+
+      <section class="gallery-promo section-shell" id="galeri">
+        <div class="section-kicker">05 / Galeri foto</div>
+        <div class="gallery-promo-heading">
+          <h2>Bagikan folder.<br /><em>Tampilkan kenangan.</em></h2>
+          <div>
+            <p>Tempel URL folder Google Drive publik dan lihat fotomu tampil dalam galeri rapi.</p>
+            <a class="button button-dark" href="galeri.html">Buka galeri <span>↗</span></a>
+          </div>
+        </div>
+        <div class="gallery-promo-grid">
+          <a class="promo-cell" href="galeri.html" data-img="assets/samples/sample-1.svg" data-name="Foto contoh 1" aria-label="Perbesar foto">
+            <img src="assets/samples/sample-1.svg" alt="" loading="lazy" />
+          </a>
+          <a class="promo-cell" href="galeri.html" data-img="assets/samples/sample-2.svg" data-name="Foto contoh 2" aria-label="Perbesar foto">
+            <img src="assets/samples/sample-2.svg" alt="" loading="lazy" />
+          </a>
+          <a class="promo-cell" href="galeri.html" data-img="assets/samples/sample-3.svg" data-name="Foto contoh 3" aria-label="Perbesar foto">
+            <img src="assets/samples/sample-3.svg" alt="" loading="lazy" />
+          </a>
+        </div>
+        <a class="button button-dark gallery-see-all" href="galeri.html">Lihat semua foto <span>↗</span></a>
+      </section>
+
+      <section class="final-cta section-shell">
+        <div class="cta-inner">
+          <span class="eyebrow"><span class="eyebrow-dot"></span> Make space for what’s next</span>
+          <h2>Folder beres.<br /><em>Pikiran lapang.</em></h2>
+          <a class="button button-accent" href="https://github.com/Danu-W/Shortirfilewindows/releases/latest/download/shortir-file-macos.zip" target="_blank" rel="noopener">Mulai dengan Shortir <span>↓</span></a>
+          <p>Pilih paket yang paling pas untukmu.</p>
+        </div>
+      </section>
     </main>
 
-    <footer class="site-footer section-shell"><div class="footer-brand"><a class="brand" href="#top"><img src="../assets/shortir_file_icon.png" alt="" /><span>shortir<span class="brand-mark">.</span></span></a><p>Less clutter. More room.</p></div><div class="footer-links"><a href="#cara-kerja">Cara kerja</a><a href="#fitur">Fitur</a><a href="#privasi">Privasi</a><a href="mailto:hello@shortirfile.app">Kontak</a></div><div class="footer-bottom"><span>© <span id="year"></span> Shortir File</span><span>Made for calmer workspaces.</span></div></footer>
+    <footer class="site-footer section-shell">
+      <div class="footer-brand">
+        <a class="brand" href="#top"><img src="assets/shortir_file_icon.png" alt="" /><span>shortir<span class="brand-mark">.</span></span></a>
+        <p>Less clutter. More room.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#cara-kerja">Cara kerja</a>
+        <a href="#fitur">Fitur</a>
+        <a href="#harga">Harga</a>
+        <a href="#privasi">Privasi</a>
+        <a href="shortir.html">Versi web</a>
+        <a href="mailto:storytiespict@gmail.com">storytiespict@gmail.com</a>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span id="year"></span> Shortir File</span>
+        <span>Made for calmer workspaces.</span>
+      </div>
+    </footer>
+
+    <div class="key-modal" id="key-modal" hidden>
+      <div class="key-modal-panel">
+        <div class="key-modal-head">
+          <h3>API key Google Drive</h3>
+          <button class="key-close" id="key-close" type="button" aria-label="Tutup">&times;</button>
+        </div>
+        <ol>
+          <li>Buka <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console → Credentials</a>, buat project baru.</li>
+          <li>Di <em>Libraries</em>, aktifkan <strong>Google Drive API</strong>.</li>
+          <li>Buat <strong>API key</strong>, lalu batasi ke <em>HTTP referrers</em> domain websitemu.</li>
+          <li>Tempel key-nya di bawah.</li>
+        </ol>
+        <input id="drive-api-key" type="text" placeholder="AIzaSy..." aria-label="API key Google Drive" autocomplete="off" />
+        <button class="button button-dark" id="key-save" type="button">Simpan</button>
+        <p class="key-note" id="key-note"></p>
+      </div>
+    </div>
+
+    <div class="lightbox" id="lightbox" hidden>
+      <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Tutup">&times;</button>
+      <button class="lightbox-nav lightbox-prev" id="lightbox-prev" type="button" aria-label="Sebelumnya">‹</button>
+      <figure class="lightbox-figure">
+        <img id="lightbox-img" src="" alt="" />
+        <figcaption id="lightbox-caption"></figcaption>
+      </figure>
+      <button class="lightbox-nav lightbox-next" id="lightbox-next" type="button" aria-label="Berikutnya">›</button>
+    </div>
+
+    <div class="fab" id="fab">
+      <button class="fab-toggle" type="button" id="fab-toggle" aria-label="Buka galeri" aria-expanded="false">
+        <span class="fab-icon">◫</span>
+      </button>
+      <span class="fab-chip">Galeri</span>
+      <div class="fab-popover" id="fab-popover" hidden>
+        <span class="fab-label">Galeri foto</span>
+        <a class="button button-small button-dark" href="galeri.html">Buka galeri <span>↗</span></a>
+        <a class="button button-small button-accent" href="galeri.html?create=1">Buat galeri <span>↗</span></a>
+      </div>
+    </div>
+
     <script src="script.js"></script>
   </body>
 </html>

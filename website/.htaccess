@@ -1,0 +1,4 @@
+<FilesMatch "\.dmg$">
+  ForceType application/x-apple-diskimage
+  Header set Content-Disposition attachment
+</FilesMatch>

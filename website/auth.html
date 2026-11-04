@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Masuk atau daftar akun Shortir." />
+    <title>Masuk — Shortir File</title>
+    <link rel="icon" type="image/png" sizes="256x256" href="assets/shortir_file_icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="studioin.css" />
+  </head>
+  <body>
+    <div class="si-header">
+      <div class="si-shell si-header-inner">
+        <a class="si-brand" href="index.html">
+          <img src="assets/shortir_file_icon.png" alt="" />
+          <span>shortir<span class="si-brand-mark">.</span></span>
+        </a>
+        <nav class="si-nav desktop-nav" aria-label="Main navigation">
+          <a href="index.html">Beranda</a>
+          <a href="index.html#fitur">Fitur</a>
+          <a href="galeri.html">Galeri</a>
+          <a href="index.html#harga">Harga</a>
+        </nav>
+        <div class="si-header-actions">
+          <button class="menu-toggle" type="button" aria-label="Buka menu" aria-expanded="false">Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <main>
+      <section class="si-auth">
+        <div class="si-auth-panel">
+          <div class="si-auth-tabs">
+            <button class="si-auth-tab is-active" id="tab-login" type="button">Masuk</button>
+            <button class="si-auth-tab" id="tab-register" type="button">Daftar</button>
+          </div>
+
+          <form class="si-auth-form" id="auth-form">
+            <div class="si-field">
+              <label for="auth-email">Email</label>
+              <input id="auth-email" type="email" placeholder="nama@email.com" autocomplete="email" required />
+            </div>
+            <div class="si-field">
+              <label for="auth-password">Kata sandi</label>
+              <input id="auth-password" type="password" placeholder="Minimal 6 karakter" autocomplete="current-password" required />
+            </div>
+            <p class="si-auth-error" id="auth-error" hidden></p>
+            <button class="si-btn si-btn-lime si-btn-block" type="submit" id="auth-submit">Masuk <span class="si-arrow">→</span></button>
+          </form>
+
+          <p class="si-note si-auth-note" id="auth-note"></p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="si-footer">
+      <div class="si-shell si-footer-inner">
+        <div class="si-footer-brand">
+          <a class="si-brand" href="index.html"><img src="assets/shortir_file_icon.png" alt="" /><span>shortir<span class="si-brand-mark">.</span></span></a>
+          <p>Less clutter. More room.</p>
+        </div>
+        <div class="si-footer-links">
+          <a href="index.html#fitur">Fitur</a>
+          <a href="index.html#harga">Harga</a>
+          <a href="index.html#privasi">Privasi</a>
+          <a href="mailto:storytiespict@gmail.com">storytiespict@gmail.com</a>
+        </div>
+        <div class="si-footer-bottom">
+          <span>© <span id="year"></span> Shortir File</span>
+          <span>Made for calmer workspaces.</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="vendor/supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+    <script>
+      (() => {
+        document.querySelector('#year').textContent = new Date().getFullYear();
+
+        if (!window.supabase) {
+          document.querySelector('#auth-error').textContent = 'Library Supabase gagal dimuat. Muat ulang halaman.';
+          document.querySelector('#auth-error').hidden = false;
+          return;
+        }
+
+        const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+        const tabLogin = document.querySelector('#tab-login');
+        const tabRegister = document.querySelector('#tab-register');
+        const form = document.querySelector('#auth-form');
+        const emailInput = document.querySelector('#auth-email');
+        const passwordInput = document.querySelector('#auth-password');
+        const errorEl = document.querySelector('#auth-error');
+        const submitBtn = document.querySelector('#auth-submit');
+        const noteEl = document.querySelector('#auth-note');
+
+        let mode = 'login';
+
+        function setMode(next) {
+          mode = next;
+          tabLogin.classList.toggle('is-active', next === 'login');
+          tabRegister.classList.toggle('is-active', next === 'register');
+          submitBtn.innerHTML = next === 'login'
+            ? 'Masuk <span class="si-arrow">→</span>'
+            : 'Daftar <span class="si-arrow">→</span>';
+          passwordInput.autocomplete = next === 'login' ? 'current-password' : 'new-password';
+          errorEl.hidden = true;
+          noteEl.textContent = '';
+        }
+
+        tabLogin.addEventListener('click', () => setMode('login'));
+        tabRegister.addEventListener('click', () => setMode('register'));
+
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          errorEl.hidden = true;
+          submitBtn.disabled = true;
+          const email = emailInput.value.trim();
+          const password = passwordInput.value;
+          try {
+            if (mode === 'login') {
+              const { error } = await sb.auth.signInWithPassword({ email, password });
+              if (error) throw error;
+            } else {
+              const { error } = await sb.auth.signUp({ email, password });
+              if (error) throw error;
+              noteEl.textContent = 'Akun dibuat. Periksa emailmu untuk konfirmasi, lalu masuk.';
+              setMode('login');
+              return;
+            }
+            window.location.href = 'galeri.html';
+          } catch (err) {
+            errorEl.textContent = err.message || 'Terjadi kesalahan.';
+            errorEl.hidden = false;
+          } finally {
+            submitBtn.disabled = false;
+          }
+        });
+
+        sb.auth.getSession().then(({ data }) => {
+          if (data.session) window.location.href = 'galeri.html';
+        });
+      })();
+    </script>
+  </body>
+</html>
